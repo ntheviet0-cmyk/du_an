@@ -1,0 +1,319 @@
+{
+  "n": 1470,
+  "attrition_rate": 0.16122448979591836,
+  "n_attr": 237,
+  "by_OverTime": {
+    "Yes": {
+      "rate": 0.30528846153846156,
+      "n": 416,
+      "attr": 127
+    },
+    "No": {
+      "rate": 0.10436432637571158,
+      "n": 1054,
+      "attr": 110
+    }
+  },
+  "by_Department": {
+    "Sales": {
+      "rate": 0.2062780269058296,
+      "n": 446,
+      "attr": 92
+    },
+    "Human Resources": {
+      "rate": 0.19047619047619047,
+      "n": 63,
+      "attr": 12
+    },
+    "Research & Development": {
+      "rate": 0.1383975026014568,
+      "n": 961,
+      "attr": 133
+    }
+  },
+  "by_JobRole": {
+    "Sales Representative": {
+      "rate": 0.39759036144578314,
+      "n": 83,
+      "attr": 33
+    },
+    "Laboratory Technician": {
+      "rate": 0.23938223938223938,
+      "n": 259,
+      "attr": 62
+    },
+    "Human Resources": {
+      "rate": 0.23076923076923078,
+      "n": 52,
+      "attr": 12
+    },
+    "Sales Executive": {
+      "rate": 0.17484662576687116,
+      "n": 326,
+      "attr": 57
+    },
+    "Research Scientist": {
+      "rate": 0.16095890410958905,
+      "n": 292,
+      "attr": 47
+    },
+    "Manufacturing Director": {
+      "rate": 0.06896551724137931,
+      "n": 145,
+      "attr": 10
+    },
+    "Healthcare Representative": {
+      "rate": 0.06870229007633588,
+      "n": 131,
+      "attr": 9
+    },
+    "Manager": {
+      "rate": 0.049019607843137254,
+      "n": 102,
+      "attr": 5
+    },
+    "Research Director": {
+      "rate": 0.025,
+      "n": 80,
+      "attr": 2
+    }
+  },
+  "by_MaritalStatus": {
+    "Single": {
+      "rate": 0.2553191489361702,
+      "n": 470,
+      "attr": 120
+    },
+    "Married": {
+      "rate": 0.12481426448736999,
+      "n": 673,
+      "attr": 84
+    },
+    "Divorced": {
+      "rate": 0.10091743119266056,
+      "n": 327,
+      "attr": 33
+    }
+  },
+  "by_JobLevel": {
+    "1": {
+      "rate": 0.26335174953959484,
+      "n": 543,
+      "attr": 143
+    },
+    "3": {
+      "rate": 0.14678899082568808,
+      "n": 218,
+      "attr": 32
+    },
+    "2": {
+      "rate": 0.09737827715355805,
+      "n": 534,
+      "attr": 52
+    },
+    "5": {
+      "rate": 0.07246376811594203,
+      "n": 69,
+      "attr": 5
+    },
+    "4": {
+      "rate": 0.04716981132075472,
+      "n": 106,
+      "attr": 5
+    }
+  },
+  "by_WorkLifeBalance": {
+    "1": {
+      "rate": 0.3125,
+      "n": 80,
+      "attr": 25
+    },
+    "4": {
+      "rate": 0.17647058823529413,
+      "n": 153,
+      "attr": 27
+    },
+    "2": {
+      "rate": 0.1686046511627907,
+      "n": 344,
+      "attr": 58
+    },
+    "3": {
+      "rate": 0.1422172452407615,
+      "n": 893,
+      "attr": 127
+    }
+  },
+  "by_StockOptionLevel": {
+    "0": {
+      "rate": 0.24405705229793978,
+      "n": 631,
+      "attr": 154
+    },
+    "3": {
+      "rate": 0.17647058823529413,
+      "n": 85,
+      "attr": 15
+    },
+    "1": {
+      "rate": 0.09395973154362416,
+      "n": 596,
+      "attr": 56
+    },
+    "2": {
+      "rate": 0.0759493670886076,
+      "n": 158,
+      "attr": 12
+    }
+  },
+  "by_TenureBucket": {
+    "0-2": {
+      "rate": 0.2982456140350877,
+      "n": 342,
+      "attr": 102
+    },
+    "3-5": {
+      "rate": 0.1382488479262673,
+      "n": 434,
+      "attr": 60
+    },
+    "6-10": {
+      "rate": 0.12276785714285714,
+      "n": 448,
+      "attr": 55
+    },
+    "10+": {
+      "rate": 0.08130081300813008,
+      "n": 246,
+      "attr": 20
+    }
+  },
+  "by_IncomeQ": {
+    "Q1(low)": {
+      "rate": 0.2926829268292683,
+      "n": 369,
+      "attr": 108
+    },
+    "Q2": {
+      "rate": 0.14207650273224043,
+      "n": 366,
+      "attr": 52
+    },
+    "Q3": {
+      "rate": 0.10626702997275204,
+      "n": 367,
+      "attr": 39
+    },
+    "Q4(high)": {
+      "rate": 0.10326086956521739,
+      "n": 368,
+      "attr": 38
+    }
+  },
+  "by_AgeBucket": {
+    "<25": {
+      "rate": 0.35772357723577236,
+      "n": 123,
+      "attr": 44
+    },
+    "25-35": {
+      "rate": 0.19141914191419143,
+      "n": 606,
+      "attr": 116
+    },
+    "45+": {
+      "rate": 0.12454212454212454,
+      "n": 273,
+      "attr": 34
+    },
+    "35-45": {
+      "rate": 0.09188034188034189,
+      "n": 468,
+      "attr": 43
+    }
+  },
+  "shap_top_rf": [
+    {
+      "feature": "cat__OverTime_Yes",
+      "mean_abs_shap": 0.06343636470432928
+    },
+    {
+      "feature": "cat__OverTime_No",
+      "mean_abs_shap": 0.05555958898860596
+    },
+    {
+      "feature": "num__JobLevel",
+      "mean_abs_shap": 0.04189624722315345
+    },
+    {
+      "feature": "cat__MaritalStatus_Single",
+      "mean_abs_shap": 0.037066269903942684
+    },
+    {
+      "feature": "num__StockOptionLevel",
+      "mean_abs_shap": 0.034864921208807645
+    },
+    {
+      "feature": "cat__JobRole_Laboratory Technician",
+      "mean_abs_shap": 0.022329662121253462
+    },
+    {
+      "feature": "num__Age",
+      "mean_abs_shap": 0.022306633497536952
+    },
+    {
+      "feature": "num__YearsWithCurrManager",
+      "mean_abs_shap": 0.021814989337617174
+    },
+    {
+      "feature": "num__YearsAtCompany",
+      "mean_abs_shap": 0.019253371234730164
+    },
+    {
+      "feature": "cat__BusinessTravel_Travel_Frequently",
+      "mean_abs_shap": 0.017168871988523873
+    }
+  ],
+  "shap_top_xgb": [
+    {
+      "feature": "cat__OverTime_Yes",
+      "mean_abs_shap": 1.6302940845489502
+    },
+    {
+      "feature": "num__StockOptionLevel",
+      "mean_abs_shap": 0.8849875330924988
+    },
+    {
+      "feature": "num__NumCompaniesWorked",
+      "mean_abs_shap": 0.7714248895645142
+    },
+    {
+      "feature": "num__MonthlyIncome",
+      "mean_abs_shap": 0.7440857887268066
+    },
+    {
+      "feature": "num__DistanceFromHome",
+      "mean_abs_shap": 0.7317396998405457
+    },
+    {
+      "feature": "num__EnvironmentSatisfaction",
+      "mean_abs_shap": 0.6487091183662415
+    },
+    {
+      "feature": "num__JobSatisfaction",
+      "mean_abs_shap": 0.6454134583473206
+    },
+    {
+      "feature": "num__YearsWithCurrManager",
+      "mean_abs_shap": 0.6438740491867065
+    },
+    {
+      "feature": "num__Age",
+      "mean_abs_shap": 0.6244436502456665
+    },
+    {
+      "feature": "cat__BusinessTravel_Travel_Frequently",
+      "mean_abs_shap": 0.5545318722724915
+    }
+  ]
+}
