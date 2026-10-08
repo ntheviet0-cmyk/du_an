@@ -1,0 +1,19 @@
+# GAT placeholder — CHI DUNG TU GIAI DOAN 3. Giu o day de thong nhat seed/ngan sach.
+n_trials_full: 50
+seeds_per_fold: [42, 43, 44]
+search:
+  k: [5, 10, 15, 20, 30]
+  graph_type: ["G1", "G2", "G3"]  # G0/G4 la doi chung ablation
+  hidden: [32, 64, 128]
+  heads: [1, 2, 4, 8]
+  dropout: [0.1, 0.6]
+  dropedge: [0.0, 0.3]
+  lr: [0.0001, 0.01]  # log
+  weight_decay: [0.00001, 0.01]  # log
+  pos_weight: [1.0, 8.0]
+fixed:
+  gat_version: "GATv2Conv"
+  n_layers: 2
+  edge_dim: 1
+  max_epochs: 300
+  early_stop_patience: 30

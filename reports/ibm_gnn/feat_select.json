@@ -1,0 +1,70 @@
+{
+  "full51": {
+    "variant": "full51",
+    "dim": 51,
+    "edges": 14877,
+    "thr_val": 0.8500000000000002,
+    "val_acc": 0.8870056497175142,
+    "test_acc": 0.8469387755102041,
+    "test_auc": 0.7642346455336377,
+    "test_pr": 0.4841186370754824,
+    "test_f1": 0.4827586206896552,
+    "test_P": 0.525,
+    "test_R": 0.44680851063829785,
+    "cm": [
+      [
+        228,
+        19
+      ],
+      [
+        26,
+        21
+      ]
+    ]
+  },
+  "top20": {
+    "variant": "top20",
+    "dim": 20,
+    "edges": 15076,
+    "thr_val": 0.8000000000000002,
+    "val_acc": 0.8926553672316384,
+    "test_acc": 0.8707482993197279,
+    "test_auc": 0.7889568438280644,
+    "test_pr": 0.49366631443460024,
+    "test_f1": 0.4864864864864865,
+    "test_P": 0.6666666666666666,
+    "test_R": 0.3829787234042553,
+    "cm": [
+      [
+        238,
+        9
+      ],
+      [
+        29,
+        18
+      ]
+    ]
+  },
+  "top20_features": [
+    "cat__OverTime_No",
+    "cat__OverTime_Yes",
+    "num__TotalWorkingYears",
+    "num__Age",
+    "cat__MaritalStatus_Single",
+    "num__YearsWithCurrManager",
+    "num__YearsInCurrentRole",
+    "num__JobLevel",
+    "cat__JobRole_Sales Representative",
+    "num__MonthlyIncome",
+    "num__YearsAtCompany",
+    "num__StockOptionLevel",
+    "cat__JobRole_Laboratory Technician",
+    "num__JobInvolvement",
+    "cat__BusinessTravel_Travel_Frequently",
+    "num__EnvironmentSatisfaction",
+    "num__JobSatisfaction",
+    "cat__MaritalStatus_Married",
+    "cat__JobRole_Research Director",
+    "cat__Department_Research & Development"
+  ]
+}

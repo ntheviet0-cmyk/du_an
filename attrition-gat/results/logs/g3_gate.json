@@ -1,0 +1,22 @@
+{
+  "hp": {
+    "hidden": 64,
+    "heads": 4,
+    "dropout": 0.3,
+    "attn_dropout": 0.3,
+    "lr": 0.003,
+    "wd": 0.0001,
+    "max_epochs": 300,
+    "patience": 30,
+    "dropedge": 0.0
+  },
+  "gat_seeds": [
+    42,
+    43,
+    44
+  ],
+  "device": "cuda",
+  "gate_rule": "mean diff PR>=+0.01 & duong >=4/5 folds vs CA G0,G4,G4u (khop k)",
+  "GO": false,
+  "elapsed_s": 0.3
+}

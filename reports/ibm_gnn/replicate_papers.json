@@ -1,0 +1,66 @@
+{
+  "A_AlAkasheh": {
+    "best_C": 0.1,
+    "cv_acc": 0.8869,
+    "acc_default": 0.8707,
+    "auc": 0.8115,
+    "pr": 0.5751,
+    "f1_valthr": 0.4722,
+    "cm_default": [
+      [
+        239,
+        8
+      ],
+      [
+        30,
+        17
+      ]
+    ]
+  },
+  "B_Li": {
+    "thr_val": 0.5,
+    "val_acc": 0.8983,
+    "acc": 0.8741,
+    "auc": 0.7873,
+    "pr": 0.5517,
+    "f1": 0.4932,
+    "cm": [
+      [
+        239,
+        8
+      ],
+      [
+        29,
+        18
+      ]
+    ],
+    "meta_coef": [
+      [
+        0.8174,
+        0.3013,
+        0.304
+      ]
+    ]
+  },
+  "graph": {
+    "edges": 14496,
+    "homophily": 0.7772,
+    "shap_features": [
+      "cat__OverTime_Yes",
+      "cat__OverTime_No",
+      "num__JobLevel",
+      "cat__MaritalStatus_Single",
+      "num__StockOptionLevel",
+      "cat__JobRole_Laboratory Technician",
+      "num__Age",
+      "num__YearsWithCurrManager",
+      "num__YearsAtCompany",
+      "cat__BusinessTravel_Travel_Frequently",
+      "num__NumCompaniesWorked",
+      "num__MonthlyIncome",
+      "num__DistanceFromHome",
+      "num__EnvironmentSatisfaction",
+      "num__JobSatisfaction"
+    ]
+  }
+}

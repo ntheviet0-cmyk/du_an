@@ -5,7 +5,7 @@ dataset (WA_Fn-UseC_-HR-Employee-Attrition.csv).
 Report deliverables:
   PRIORITY 1 : Random Forest  (SMOTE + 5-fold CV tuning, threshold optimization)
   PRIORITY 2 : XGBoost        (SMOTE + scale_pos_weight + 5-fold CV, threshold optimization)
-  PRIORITY 3 : Graph (predictive) - LabelSpreading (knn/rbf, SMOTE + 5-fold CV) as 3rd model
+  PRIORITY 3 : Graph (predictive, OFFICIAL) - GraphSAGE end-to-end (kNN + SAGE)
   PRIORITY 4 : Causal DAG via DoWhy: OverTime -> Attrition + 3-model comparison figure
 
 Outputs: reports/ibm/{roc_curves.png, metrics_bar.png, graph_similarity.png, attrition_dag.png, ibm_results.json}
@@ -37,7 +37,6 @@ import shap
 import dowhy
 from dowhy import CausalModel
 import networkx as nx
-from sklearn.semi_supervised import LabelSpreading
 from sklearn.neighbors import kneighbors_graph
 
 warnings.filterwarnings("ignore")
@@ -129,7 +128,7 @@ print("best RF params:", gs_rf.best_params_)
 res_rf, proba_rf, pred_rf = evaluate(rf, X_test_t, y_test, "RandomForest")
 
 # ---------------------------------------------------------------------------
-# PRIORITY 2: XGBoost (SMOTE + scale_pos_weight - per user request)
+# PRIORITY 2: XGBoost 
 # ---------------------------------------------------------------------------
 print("\n=== PRIORITY 2: XGBOOST ===")
 spw = (len(y_train) - y_train.sum()) / y_train.sum()
@@ -148,29 +147,116 @@ print("best XGB params:", gs_xgb.best_params_)
 res_xgb, proba_xgb, pred_xgb = evaluate(xgbm, X_test_t, y_test, "XGBoost")
 
 # ---------------------------------------------------------------------------
-# PRIORITY 3: GRAPH (predictive) - LabelSpreading with SMOTE + 5-fold CV
+# PRIORITY 3: GRAPH (predictive, OFFICIAL) - GraphSAGE end-to-end
+# kNN cosine k=15 tren full 51-dim + SAGE 64-32 (h=64, drop=0.3, lr=0.01,
+# wd=5e-5) + BCE pos_weight + early-stop val PR-AUC + threshold F1 tren VAL.
+# Chi tiet: gnn_models.py (SAGE)
 # ---------------------------------------------------------------------------
-print("\n=== PRIORITY 3: GRAPH (LabelSpreading) ===")
-pipe_graph = Pipeline([
-    ("smote", SMOTE(random_state=RANDOM_STATE)),
-    ("clf", LabelSpreading(kernel='knn', max_iter=30, n_jobs=None)),
-])
-# Conditional grid for knn vs rbf kernels
-grid_graph = [
-    {"clf__kernel": ["knn"], "clf__n_neighbors": [10, 15, 20], "clf__alpha": [0.1, 0.2, 0.5]},
-    {"clf__kernel": ["rbf"], "clf__gamma": [10, 20], "clf__alpha": [0.1, 0.2, 0.5]},
-]
-gs_graph = GridSearchCV(pipe_graph, grid_graph, cv=5, scoring="f1")
-gs_graph.fit(X_train_t, y_train)
-graph_model = gs_graph.best_estimator_
-print("best Graph params:", gs_graph.best_params_)
-res_graph, proba_graph, pred_graph = evaluate(graph_model, X_test_t, y_test, "Graph")
+print("\n=== PRIORITY 3: GRAPH (GraphSAGE end-to-end, official) ===")
+import torch
+import torch.nn.functional as F
+from sklearn.neighbors import kneighbors_graph as kng_graph
+from gnn_models import SAGE as SAGE_G, attach_node
 
-# best among 3 by ROC-AUC (per user decision 3)
+torch.manual_seed(RANDOM_STATE)
+np.random.seed(RANDOM_STATE)
+X_all_t = np.vstack([X_train_t, X_test_t])
+if hasattr(X_all_t, "toarray"):
+    X_all_t = X_all_t.toarray()
+X_all_t = X_all_t.astype(np.float32)
+N_all = len(X_all_t)
+n_tr = len(X_train_t)
+y_all = np.concatenate([y_train, y_test])
+idx_tr_all = np.arange(n_tr)
+idx_te_all = np.arange(n_tr, N_all)
+from sklearn.model_selection import StratifiedShuffleSplit
+sss = StratifiedShuffleSplit(n_splits=1, test_size=0.15, random_state=RANDOM_STATE)
+idx_tr2a, idx_vaa = next(sss.split(idx_tr_all, y_train))
+
+K_SAGE = 15
+A_g = kng_graph(X_all_t, n_neighbors=K_SAGE, mode="connectivity",
+                metric="cosine", include_self=False)
+A_g = A_g.maximum(A_g.T)
+ei_g = torch.tensor(np.vstack(A_g.nonzero()), dtype=torch.long)
+r_g, c_g = ei_g.numpy()
+print(f"[graph] kNN-cosine k={K_SAGE} edges={A_g.nnz//2} "
+      f"homophily={float((y_all[r_g]==y_all[c_g]).mean()):.3f}")
+
+Xt_g = torch.tensor(X_all_t)
+yt_g = torch.tensor(y_all, dtype=torch.float32)
+sage_m = SAGE_G(X_all_t.shape[1], h=64, drop=0.3)
+opt_g = torch.optim.Adam(sage_m.parameters(), lr=0.01, weight_decay=5e-5)
+pos_g = float((len(idx_tr2a) - y_all[idx_tr2a].sum()) / max(y_all[idx_tr2a].sum(), 1))
+crit_g = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_g]))
+best_pr, bs_g, bad_g = -1, None, 0
+for ep_g in range(200):
+    sage_m.train(); opt_g.zero_grad()
+    out_g = sage_m(Xt_g, ei_g)
+    loss_g = crit_g(out_g[idx_tr2a], yt_g[idx_tr2a]); loss_g.backward(); opt_g.step()
+    sage_m.eval()
+    with torch.no_grad():
+        pv_g = torch.sigmoid(sage_m(Xt_g, ei_g)[idx_vaa]).numpy()
+    try:
+        pr_v = float(average_precision_score(y_all[idx_vaa], pv_g))
+    except Exception:
+        pr_v = 0.0
+    if pr_v > best_pr:
+        best_pr, bs_g, bad_g = pr_v, {k: v.cpu().clone() for k, v in sage_m.state_dict().items()}, 0
+    else:
+        bad_g += 1
+    if bad_g >= 30:
+        break
+sage_m.load_state_dict(bs_g); sage_m.eval()
+print(f"[graph] SAGE val_PR-AUC={best_pr:.4f} ep={ep_g+1}")
+with torch.no_grad():
+    lg_all = sage_m(Xt_g, ei_g).numpy()
+pv_va = torch.sigmoid(torch.tensor(lg_all[idx_vaa])).numpy()
+pt_te = torch.sigmoid(torch.tensor(lg_all[idx_te_all])).numpy()
+# threshold F1 toi uu tren VAL
+best_t_g, best_f1v = 0.5, -1
+for t_g in np.arange(0.1, 0.91, 0.05):
+    f1v = f1_score(y_all[idx_vaa], (pv_va >= t_g).astype(int), zero_division=0)
+    if f1v > best_f1v:
+        best_f1v, best_t_g = f1v, t_g
+pred_g = (pt_te >= best_t_g).astype(int)
+proba_graph = pt_te
+res_graph = {
+    "model": "Graph",
+    "roc_auc": float(roc_auc_score(y_test, pt_te)),
+    "pr_auc": float(average_precision_score(y_test, pt_te)),
+    "precision": float(precision_score(y_test, pred_g, zero_division=0)),
+    "recall": float(recall_score(y_test, pred_g, zero_division=0)),
+    "f1": float(f1_score(y_test, pred_g, zero_division=0)),
+    "val_f1": float(best_f1v),
+    "best_threshold": float(best_t_g),
+    "accuracy_default": float((((pt_te >= 0.5).astype(int)) == y_test).mean()),
+    "confusion_matrix": confusion_matrix(y_test, pred_g).tolist(),
+    "n_test": int(len(y_test)),
+    "n_pred_positive": int(pred_g.sum()),
+}
+print(f"[Graph] ROC-AUC={res_graph['roc_auc']:.4f} PR-AUC={res_graph['pr_auc']:.4f} "
+      f"F1={res_graph['f1']:.4f} (thr_val={best_t_g:.2f}) ACC@0.5={res_graph['accuracy_default']:.4f} "
+      f"P={res_graph['precision']:.3f} R={res_graph['recall']:.3f}")
+# train-only graph cho app inference (SAGE inductive: gan node moi vao graph train)
+A_tr = kng_graph(np.array(X_train_t.toarray() if hasattr(X_train_t, "toarray") else X_train_t, dtype=np.float32),
+                 n_neighbors=K_SAGE, mode="connectivity", metric="cosine", include_self=False)
+A_tr = A_tr.maximum(A_tr.T)
+ei_tr = torch.tensor(np.vstack(A_tr.nonzero()), dtype=torch.long)
+graph_bundle = {
+    "kind": "sage",
+    "sage_state": {k: v.cpu() for k, v in sage_m.state_dict().items()},
+    "in_dim": int(X_all_t.shape[1]),
+    "X_train": X_train_t.toarray().astype(np.float32) if hasattr(X_train_t, "toarray") else np.array(X_train_t, dtype=np.float32),
+    "ei_train": ei_tr,
+    "h": 64, "drop": 0.3,
+}
+print(f"[graph] bundle: train_nodes={len(X_train_t)} edges={ei_tr.shape[1]//2}")
+
+# best by metric (reference) + main model by policy (Graph SAGE-thuan k=15)
 all_res = {"RandomForest": res_rf, "XGBoost": res_xgb, "Graph": res_graph}
-best_name = max(all_res, key=lambda k: all_res[k]["roc_auc"])
-best_model = {"RandomForest": rf, "XGBoost": xgbm, "Graph": graph_model}[best_name]
-print(f"\n[summary] best model by ROC-AUC (3-way) = {best_name}")
+best_metric = max(all_res, key=lambda k: all_res[k]["roc_auc"])
+best_name = "Graph"  # policy: SAGE thuan lam mo hinh chinh, RF/XGB la baseline
+print(f"\n[summary] best by ROC-AUC (3-way) = {best_metric}; main model by policy = {best_name}")
 
 # ---------------------------------------------------------------------------
 # Persist artifacts for the Streamlit app
@@ -180,47 +266,23 @@ ART_DIR.mkdir(parents=True, exist_ok=True)
 joblib.dump(pre, ART_DIR / "preprocessor.joblib")
 joblib.dump(rf, ART_DIR / "random_forest.joblib")
 joblib.dump(xgbm, ART_DIR / "xgboost.joblib")
-joblib.dump(graph_model, ART_DIR / "graph.joblib")
+joblib.dump(graph_bundle, ART_DIR / "graph.joblib")
 meta = {
     "features": CAT + NUM, "cat": CAT, "num": NUM,
     "feat_names": feat_names.tolist(), "best_model": best_name,
     "thr_rf": res_rf["best_threshold"], "thr_xgb": res_xgb["best_threshold"],
     "thr_graph": res_graph["best_threshold"],
     "metrics": {"RandomForest": res_rf, "XGBoost": res_xgb, "Graph": res_graph},
-    "graph_params": gs_graph.best_params_,
+    "graph_params": {"model": "GraphSAGE-end2end", "graph": "knn-cosine",
+                     "k": K_SAGE, "sage": "64-32", "lr": 0.01, "wd": 5e-5,
+                     "drop": 0.3, "early_stop": "val-PR-AUC"},
 }
 joblib.dump(meta, ART_DIR / "meta.joblib")
 print(f"[artifacts] saved models + preprocessor -> {ART_DIR}")
-# Graph predictive node/edge stats (after SMOTE)
-try:
-    clf_g = graph_model.named_steps["clf"]
-    # After SMOTE, X_train_resampled size
-    from collections import Counter
-    # Retrieve resampled y size via SMOTE fit (approx)
-    sm = SMOTE(random_state=RANDOM_STATE)
-    _, y_res = sm.fit_resample(X_train_t, y_train)
-    n_nodes_train = len(y_res)
-    n_pos_train = int((y_res==1).sum())
-    print(f"[graph] predictive nodes: train_original={len(y_train)} pos={int(y_train.sum())} -> after SMOTE n_nodes={n_nodes_train} pos={n_pos_train}")
-    if hasattr(clf_g, "affinity_matrix_") and clf_g.affinity_matrix_ is not None:
-        am = clf_g.affinity_matrix_
-        n_nodes = am.shape[0]
-        # affinity_matrix_ may be sparse or dense
-        try:
-            n_edges = int(am.nnz) if hasattr(am, "nnz") else int((am>1e-9).sum())
-        except Exception:
-            n_edges = int((am>0).sum()) if hasattr(am, "sum") else -1
-        print(f"[graph] affinity matrix: n_nodes={n_nodes} n_edges(nnz)={n_edges}")
-    if hasattr(clf_g, "graph_matrix") and clf_g.graph_matrix is not None:
-        gm = clf_g.graph_matrix
-        try:
-            n_edges_g = int(gm.nnz) if hasattr(gm, "nnz") else int((gm>1e-9).sum())
-            print(f"[graph] graph_matrix n_edges={n_edges_g}")
-        except Exception:
-            pass
-    print(f"[graph] kernel={clf_g.kernel} n_neighbors={getattr(clf_g,'n_neighbors', 'N/A')} alpha={clf_g.alpha} gamma={getattr(clf_g,'gamma', 'N/A')}")
-except Exception as e:
-    print(f"[graph] stats warning: {e}")
+# Graph predictive node/edge stats
+print(f"[graph] nodes: all={N_all} (train={n_tr} test={len(idx_te_all)}) "
+      f"edges={A_g.nnz//2} train_edges={A_tr.nnz//2} "
+      f"feat_dim={X_all_t.shape[1]} emb_dim=32")
 
 # ---------------------------------------------------------------------------
 # SHAP for both models
@@ -282,8 +344,8 @@ try:
         Xs_dense = Xs.toarray()
     else:
         Xs_dense = np.array(Xs)
-    # Build kNN graph with k=10 for visualization (use best n_neighbors if knn)
-    best_k = gs_graph.best_params_.get("n_neighbors", 10)
+    # Build kNN graph with k=10 for visualization (SAGE official uses k=15)
+    best_k = K_SAGE
     A = kneighbors_graph(Xs_dense, n_neighbors=min(best_k, 10), mode='connectivity', include_self=False)
     G_vis = nx.from_scipy_sparse_array(A)
     # Use spring layout
@@ -379,13 +441,14 @@ report = {
     "models": {"RandomForest": res_rf, "XGBoost": res_xgb, "Graph": res_graph},
     "best_model": best_name,
     "graph_predictive": {
-        "kernel": gs_graph.best_params_.get("clf__kernel"),
-        "params": gs_graph.best_params_,
+        "kernel": "knn-cosine",
+        "params": {"model": "GraphSAGE-end2end", "k": K_SAGE,
+                   "sage": "64-32", "lr": 0.01, "wd": 5e-5, "drop": 0.3},
         "n_nodes_train_original": int(len(y_train)),
-        "n_nodes_train_after_smote": int(len(y_res)) if 'y_res' in locals() else None,
+        "n_nodes_all": int(N_all),
         "vis_stats": graph_vis_stats if 'graph_vis_stats' in locals() else {},
         "feat_dim": int(X_train_t.shape[1]),
-        "graph_type": "LabelSpreading (employee similarity kNN graph)",
+        "graph_type": "GraphSAGE end-to-end (kNN cosine + SAGE 64-32, no SVM)",
     },
     "causal": {
         "treatment": "OverTime",

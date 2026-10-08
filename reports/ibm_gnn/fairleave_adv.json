@@ -1,0 +1,330 @@
+{
+  "lambda_tune": {
+    "0.0": {
+      "seed": 1,
+      "lambda": 0.0,
+      "thr": 0.6,
+      "val_pr": 0.6062,
+      "val_auc": 0.8374,
+      "acc": 0.7823,
+      "auc": 0.7849,
+      "pr": 0.4965,
+      "f1": 0.4754,
+      "fair": {
+        "male": {
+          "tpr": 0.5,
+          "fpr": 0.1788
+        },
+        "female": {
+          "tpr": 0.72,
+          "fpr": 0.1979
+        },
+        "eqodds_diff": 0.22
+      },
+      "cm": [
+        [
+          201,
+          46
+        ],
+        [
+          18,
+          29
+        ]
+      ]
+    },
+    "0.1": {
+      "seed": 1,
+      "lambda": 0.1,
+      "thr": 0.5,
+      "val_pr": 0.6085,
+      "val_auc": 0.8311,
+      "acc": 0.7483,
+      "auc": 0.7926,
+      "pr": 0.4928,
+      "f1": 0.4559,
+      "fair": {
+        "male": {
+          "tpr": 0.5455,
+          "fpr": 0.2185
+        },
+        "female": {
+          "tpr": 0.76,
+          "fpr": 0.2604
+        },
+        "eqodds_diff": 0.2145
+      },
+      "cm": [
+        [
+          189,
+          58
+        ],
+        [
+          16,
+          31
+        ]
+      ]
+    },
+    "0.5": {
+      "seed": 1,
+      "lambda": 0.5,
+      "thr": 0.65,
+      "val_pr": 0.6336,
+      "val_auc": 0.8467,
+      "acc": 0.8129,
+      "auc": 0.7928,
+      "pr": 0.5138,
+      "f1": 0.5045,
+      "fair": {
+        "male": {
+          "tpr": 0.5,
+          "fpr": 0.1391
+        },
+        "female": {
+          "tpr": 0.68,
+          "fpr": 0.1562
+        },
+        "eqodds_diff": 0.18
+      },
+      "cm": [
+        [
+          211,
+          36
+        ],
+        [
+          19,
+          28
+        ]
+      ]
+    },
+    "1.0": {
+      "seed": 1,
+      "lambda": 1.0,
+      "thr": 0.7,
+      "val_pr": 0.6017,
+      "val_auc": 0.8516,
+      "acc": 0.8401,
+      "auc": 0.7848,
+      "pr": 0.4897,
+      "f1": 0.4598,
+      "fair": {
+        "male": {
+          "tpr": 0.3636,
+          "fpr": 0.0795
+        },
+        "female": {
+          "tpr": 0.48,
+          "fpr": 0.0833
+        },
+        "eqodds_diff": 0.1164
+      },
+      "cm": [
+        [
+          227,
+          20
+        ],
+        [
+          27,
+          20
+        ]
+      ]
+    }
+  },
+  "best_lambda": 1.0,
+  "final": {
+    "42": {
+      "seed": 42,
+      "lambda": 1.0,
+      "thr": 0.55,
+      "val_pr": 0.5804,
+      "val_auc": 0.7665,
+      "acc": 0.7721,
+      "auc": 0.7333,
+      "pr": 0.4626,
+      "f1": 0.437,
+      "fair": {
+        "male": {
+          "tpr": 0.5161,
+          "fpr": 0.1701
+        },
+        "female": {
+          "tpr": 0.625,
+          "fpr": 0.21
+        },
+        "eqodds_diff": 0.1089
+      },
+      "cm": [
+        [
+          201,
+          46
+        ],
+        [
+          21,
+          26
+        ]
+      ]
+    },
+    "1": {
+      "seed": 1,
+      "lambda": 1.0,
+      "thr": 0.7,
+      "val_pr": 0.6017,
+      "val_auc": 0.8516,
+      "acc": 0.8401,
+      "auc": 0.7848,
+      "pr": 0.4897,
+      "f1": 0.4598,
+      "fair": {
+        "male": {
+          "tpr": 0.3636,
+          "fpr": 0.0795
+        },
+        "female": {
+          "tpr": 0.48,
+          "fpr": 0.0833
+        },
+        "eqodds_diff": 0.1164
+      },
+      "cm": [
+        [
+          227,
+          20
+        ],
+        [
+          27,
+          20
+        ]
+      ]
+    },
+    "7": {
+      "seed": 7,
+      "lambda": 1.0,
+      "thr": 0.6,
+      "val_pr": 0.4785,
+      "val_auc": 0.7912,
+      "acc": 0.8163,
+      "auc": 0.7825,
+      "pr": 0.4917,
+      "f1": 0.46,
+      "fair": {
+        "male": {
+          "tpr": 0.4571,
+          "fpr": 0.0897
+        },
+        "female": {
+          "tpr": 0.5833,
+          "fpr": 0.1667
+        },
+        "eqodds_diff": 0.1262
+      },
+      "cm": [
+        [
+          217,
+          30
+        ],
+        [
+          24,
+          23
+        ]
+      ]
+    }
+  },
+  "counterfactuals": {
+    "seed": 1,
+    "thr": 0.7000000000000002,
+    "cases": [
+      {
+        "node": 1021,
+        "p_before": 0.9532,
+        "p_after": 0.9354,
+        "drop": 0.0178,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 357,
+        "p_before": 0.9367,
+        "p_after": 0.9397,
+        "drop": -0.003,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 1060,
+        "p_before": 0.9347,
+        "p_after": 0.923,
+        "drop": 0.0117,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 1249,
+        "p_before": 0.9272,
+        "p_after": 0.9081,
+        "drop": 0.0191,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 1391,
+        "p_before": 0.9199,
+        "p_after": 0.9384,
+        "drop": -0.0185,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 301,
+        "p_before": 0.9074,
+        "p_after": 0.8686,
+        "drop": 0.0388,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 892,
+        "p_before": 0.8958,
+        "p_after": 0.9106,
+        "drop": -0.0149,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 1197,
+        "p_before": 0.8844,
+        "p_after": 0.8638,
+        "drop": 0.0207,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 731,
+        "p_before": 0.8784,
+        "p_after": 0.8563,
+        "drop": 0.0221,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      },
+      {
+        "node": 14,
+        "p_before": 0.8743,
+        "p_after": 0.871,
+        "drop": 0.0033,
+        "n_actions": 0,
+        "actions": [],
+        "success": false
+      }
+    ],
+    "avg_drop": 0.0097,
+    "median_actions": 0.0,
+    "success_rate": 0.0
+  }
+}

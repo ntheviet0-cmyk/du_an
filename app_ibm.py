@@ -34,13 +34,19 @@ def load_artifacts():
     rf = joblib.load(ART / "random_forest.joblib")
     xgbm = joblib.load(ART / "xgboost.joblib")
     meta = joblib.load(ART / "meta.joblib")
-    return pre, rf, xgbm, meta
+    try:
+        graph = joblib.load(ART / "graph.joblib")
+    except Exception:
+        graph = None
+    return pre, rf, xgbm, meta, graph
 
-pre, rf, xgbm, meta = load_artifacts()
+pre, rf, xgbm, meta, graph_bundle = load_artifacts()
 feat_names = meta["feat_names"]
 CAT, NUM = meta["cat"], meta["num"]
 thr_rf, thr_xgb = meta["thr_rf"], meta["thr_xgb"]
+thr_graph = meta.get("thr_graph", 0.5)
 metrics = meta["metrics"]
+graph_ok = isinstance(graph_bundle, dict) and "sage_state" in graph_bundle
 
 causal = json.loads((REP / "ibm_results.json").read_text(encoding="utf-8"))["causal"]
 ate = causal["ate"]
@@ -55,13 +61,41 @@ page = st.sidebar.radio("Chọn trang", [
     "4. Nhân quả & What-If",
     "5. So sánh mô hình",
 ])
-model_choice = st.sidebar.selectbox("Mô hình dùng dự đoán", ["Random Forest", "XGBoost"])
-model = rf if model_choice == "Random Forest" else xgbm
-thr = thr_rf if model_choice == "Random Forest" else thr_xgb
+model_choice = st.sidebar.selectbox("Mô hình dùng dự đoán", ["Graph (SAGE)", "Random Forest", "XGBoost"])
+is_graph = model_choice.startswith("Graph")
+if is_graph and not graph_ok:
+    st.sidebar.warning("Graph SAGE chưa có artifact — hãy chạy train_ibm.py. Tạm dùng Random Forest.")
+    is_graph = False
+    model_choice = "Random Forest"
+model = rf if model_choice == "Random Forest" else (xgbm if model_choice == "XGBoost" else None)
+thr = thr_rf if model_choice == "Random Forest" else (thr_xgb if model_choice == "XGBoost" else thr_graph)
 
 def predict_proba(row_df):
     Xt = pre.transform(row_df)
-    return model.predict_proba(Xt)[:, 1][0]
+    if hasattr(Xt, "toarray"):
+        Xt = Xt.toarray()
+    if not is_graph:
+        return model.predict_proba(Xt)[:, 1][0]
+    # GraphSAGE end-to-end (inductive): gan node moi vao graph train -> forward 1 pass -> sigmoid
+    import torch
+    from sklearn.neighbors import kneighbors_graph
+    from gnn_models import SAGE as SAGE_M
+    g = graph_bundle
+    Xn = np.asarray(Xt[0], dtype=np.float32)
+    Xtr = np.asarray(g["X_train"], dtype=np.float32)
+    sims = (Xtr @ Xn) / (np.linalg.norm(Xtr, axis=1) * np.linalg.norm(Xn) + 1e-9)
+    js = np.argsort(sims)[::-1][:15]
+    n = Xtr.shape[0]
+    X_aug = np.vstack([Xtr, Xn.reshape(1, -1)])
+    er = g["ei_train"][0].tolist() + [n] * 15 + js.tolist()
+    ec = g["ei_train"][1].tolist() + js.tolist() + [n] * 15
+    ei_aug = torch.tensor([er, ec], dtype=torch.long)
+    gm = SAGE_M(int(g["in_dim"]), h=int(g.get("h", 64)), drop=float(g.get("drop", 0.3)))
+    gm.load_state_dict({k: v for k, v in g["sage_state"].items()})
+    gm.eval()
+    with torch.no_grad():
+        logit = gm(torch.tensor(X_aug), ei_aug)[n]
+    return float(torch.sigmoid(logit).item())
 
 # ===================================================================
 # PAGE 1 : TONG QUAN
@@ -75,7 +109,9 @@ if page.startswith("1"):
     with col2:
         st.markdown('<div class="kpi-card"><div class="big-num">16.1%</div>Tỷ lệ nghỉ việc</div>', unsafe_allow_html=True)
     with col3:
-        st.markdown(f'<div class="kpi-card"><div class="big-num">{metrics["RandomForest"]["roc_auc"]:.3f}</div>ROC-AUC (RF)</div>', unsafe_allow_html=True)
+        _best = meta.get("best_model", "RandomForest")
+        _bk = {"RandomForest": "RandomForest", "XGBoost": "XGBoost", "Graph": "Graph"}.get(_best, "RandomForest")
+        st.markdown(f'<div class="kpi-card"><div class="big-num">{metrics[_bk]["roc_auc"]:.3f}</div>ROC-AUC ({_best})</div>', unsafe_allow_html=True)
     with col4:
         st.markdown(f'<div class="kpi-card"><div class="big-num">+{ate*100:.1f}%</div>ATE (OverTime)</div>', unsafe_allow_html=True)
 
@@ -190,30 +226,35 @@ elif page.startswith("2"):
             st.progress(float(proba))
             st.caption("Thanh xác suất (0 → 100%)")
 
-        # SHAP waterfall
+        # SHAP waterfall (chi cho tree models; Graph dung lân can tuong dong de giai thich)
         st.markdown('<div class="section-title">🧩 Tại sao mô hình đưa ra kết quả này?</div>', unsafe_allow_html=True)
-        clf = model.named_steps["clf"]
-        explainer = shap.TreeExplainer(clf)
-        Xt = pre.transform(row_df)
-        sv = explainer.shap_values(Xt)
-        if isinstance(sv, list):
-            sv = sv[1]
-        elif sv.ndim == 3:
-            sv = sv[:, :, 1]
+        if is_graph:
+            st.info("GraphSAGE dự báo end-to-end trên đồ thị tương đồng: mỗi nhân viên là 1 node, "
+                    "model gộp thông tin 15 người giống nhất (SAGE sampling) rồi ra xác suất trực tiếp. "
+                    "Biểu đồ SHAP chi tiết dùng cho Random Forest/XGBoost.")
         else:
-            sv = sv
-        ev = explainer.expected_value
-        if isinstance(ev, (list, np.ndarray)) and len(np.atleast_1d(ev)) > 1:
-            exp_val = ev[1]
-        else:
-            exp_val = ev
-        expl = shap.Explanation(values=sv[0], base_values=exp_val,
-                                data=Xt[0], feature_names=feat_names)
-        fig, ax = plt.subplots(figsize=(9, 5))
-        shap.plots.waterfall(expl, max_display=15, show=False)
-        plt.tight_layout()
-        st.pyplot(fig)
-        st.caption("Màu đỏ = đẩy tăng rủi ro, màu xanh = giảm rủi ro. Giá trị hiển thị là độ lệch so với trung bình.")
+            clf = model.named_steps["clf"]
+            explainer = shap.TreeExplainer(clf)
+            Xt = pre.transform(row_df)
+            sv = explainer.shap_values(Xt)
+            if isinstance(sv, list):
+                sv = sv[1]
+            elif sv.ndim == 3:
+                sv = sv[:, :, 1]
+            else:
+                sv = sv
+            ev = explainer.expected_value
+            if isinstance(ev, (list, np.ndarray)) and len(np.atleast_1d(ev)) > 1:
+                exp_val = ev[1]
+            else:
+                exp_val = ev
+            expl = shap.Explanation(values=sv[0], base_values=exp_val,
+                                    data=Xt[0], feature_names=feat_names)
+            fig, ax = plt.subplots(figsize=(9, 5))
+            shap.plots.waterfall(expl, max_display=15, show=False)
+            plt.tight_layout()
+            st.pyplot(fig)
+            st.caption("Màu đỏ = đẩy tăng rủi ro, màu xanh = giảm rủi ro. Giá trị hiển thị là độ lệch so với trung bình.")
 
 # ===================================================================
 # PAGE 3 : SHAP
@@ -267,17 +308,22 @@ elif page.startswith("4"):
 # ===================================================================
 elif page.startswith("5"):
     st.title("⚖️ So sánh mô hình")
-    dfm = pd.DataFrame([
-        {"Mô hình": "Random Forest", **{k: round(metrics["RandomForest"][k], 3)
-         for k in ["roc_auc", "pr_auc", "f1", "precision", "recall"]}},
-        {"Mô hình": "XGBoost", **{k: round(metrics["XGBoost"][k], 3)
-         for k in ["roc_auc", "pr_auc", "f1", "precision", "recall"]}},
-    ]).set_index("Mô hình")
+    rows = []
+    for key, label in [("RandomForest", "Random Forest"), ("XGBoost", "XGBoost"), ("Graph", "Graph (SAGE)")]:
+        if key in metrics:
+            r = {"Mô hình": label}
+            r.update({k: round(metrics[key][k], 3) for k in ["roc_auc", "pr_auc", "f1", "precision", "recall"]})
+            if "accuracy_default" in metrics[key]:
+                r["accuracy"] = round(metrics[key]["accuracy_default"], 3)
+            rows.append(r)
+    dfm = pd.DataFrame(rows).set_index("Mô hình")
     st.dataframe(dfm, use_container_width=True)
     c1, c2 = st.columns(2)
     with c1:
         st.image(str(REP / "roc_curves.png"), use_container_width=True)
     with c2:
         st.image(str(REP / "metrics_bar.png"), use_container_width=True)
-    st.info("**Lựa chọn:** Random Forest làm mô hình chính (AUC & Recall cao, bắt được nhiều rủi ro). "
+    best = meta.get("best_model", "RandomForest")
+    st.info(f"Mô hình chính: {best} (Graph SAGE kNN-cosine k=15 end-to-end). RF/XGB là baseline. "
+            "Graph dự báo trực tiếp trên đồ thị tương đồng (không qua SVM lai). RF bắt recall tốt. "
             "XGBoost dùng khi ưu tiên Precision (ít báo động giả).")

@@ -1,0 +1,87 @@
+{
+  "seed": 42,
+  "n_folds": 25,
+  "pool": "outer-train LOO",
+  "features": "base (eng ablation o Giai doan 4)",
+  "G2": "HOAN sang Giai doan 3 \u2014 chua do",
+  "G0": "bo theo dieu chinh",
+  "G4_seed_rule": "42000 + fold_global*100 + k",
+  "t_crit_95_df24": 2.0639,
+  "go_rule": "lift>=1.5 & CI95% khong chua muc G4 & ROC kNN-label CI khong chong lan & G1 cao hon, it nhat 1 k",
+  "decisions": [
+    {
+      "k": 5,
+      "lift>=1.5_va_CI_khong_chua_G4": true,
+      "ROC_CI_khong_chong_lan_va_G1_cao_hon": true,
+      "GO_tai_k": true
+    },
+    {
+      "k": 10,
+      "lift>=1.5_va_CI_khong_chua_G4": true,
+      "ROC_CI_khong_chong_lan_va_G1_cao_hon": true,
+      "GO_tai_k": true
+    },
+    {
+      "k": 15,
+      "lift>=1.5_va_CI_khong_chua_G4": true,
+      "ROC_CI_khong_chong_lan_va_G1_cao_hon": true,
+      "GO_tai_k": true
+    },
+    {
+      "k": 20,
+      "lift>=1.5_va_CI_khong_chua_G4": true,
+      "ROC_CI_khong_chong_lan_va_G1_cao_hon": true,
+      "GO_tai_k": true
+    },
+    {
+      "k": 30,
+      "lift>=1.5_va_CI_khong_chua_G4": true,
+      "ROC_CI_khong_chong_lan_va_G1_cao_hon": true,
+      "GO_tai_k": true
+    }
+  ],
+  "G4_sanity": [
+    {
+      "k": 5,
+      "G4_P1": 0.2475,
+      "background": 0.1605,
+      "G4_lift": 1.5417,
+      "G4_ROC": 0.4958,
+      "gan_nen": false
+    },
+    {
+      "k": 10,
+      "G4_P1": 0.2354,
+      "background": 0.1605,
+      "G4_lift": 1.4664,
+      "G4_ROC": 0.497,
+      "gan_nen": false
+    },
+    {
+      "k": 15,
+      "G4_P1": 0.2328,
+      "background": 0.1605,
+      "G4_lift": 1.4504,
+      "G4_ROC": 0.5032,
+      "gan_nen": false
+    },
+    {
+      "k": 20,
+      "G4_P1": 0.2247,
+      "background": 0.1605,
+      "G4_lift": 1.4001,
+      "G4_ROC": 0.4946,
+      "gan_nen": false
+    },
+    {
+      "k": 30,
+      "G4_P1": 0.22,
+      "background": 0.1605,
+      "G4_lift": 1.3707,
+      "G4_ROC": 0.4968,
+      "gan_nen": false
+    }
+  ],
+  "GO": true,
+  "elapsed_s": 16.0
+}

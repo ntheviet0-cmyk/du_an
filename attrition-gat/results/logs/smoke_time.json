@@ -1,0 +1,12 @@
+{
+  "timings_s": {
+    "rf_base": 6.6,
+    "xgb_base": 2.1,
+    "rf_eng": 5.8,
+    "xgb_eng": 2.1
+  },
+  "total_smoke_s": 18.0,
+  "note": "1 fold, 3 trials/model/feat; full=25 folds x 50 trials",
+  "est_full_baseline_CPU_h": 1.92,
+  "warning": "day la uoc luong tuyen tinh; Optuna TPE + XGB early behavior co the lech; GAT (Giai doan 3-4) tinh rieng vi gap ~3 seeds x epochs"
+}

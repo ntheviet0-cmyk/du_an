@@ -48,36 +48,41 @@
     },
     "Graph": {
       "model": "Graph",
-      "roc_auc": 0.6908433112240502,
-      "pr_auc": 0.3666160722523694,
-      "precision": 0.3125,
-      "recall": 0.5319148936170213,
-      "f1": 0.3937007874015748,
-      "best_threshold": 0.7000000000000002,
+      "roc_auc": 0.7538978378844001,
+      "pr_auc": 0.4963138028568429,
+      "precision": 0.5517241379310345,
+      "recall": 0.3404255319148936,
+      "f1": 0.42105263157894735,
+      "val_f1": 0.6666666666666666,
+      "best_threshold": 0.9000000000000002,
+      "accuracy_default": 0.8129251700680272,
       "confusion_matrix": [
         [
-          192,
-          55
+          234,
+          13
         ],
         [
-          22,
-          25
+          31,
+          16
         ]
       ],
       "n_test": 294,
-      "n_pred_positive": 80
+      "n_pred_positive": 29
     }
   },
-  "best_model": "RandomForest",
+  "best_model": "Graph",
   "graph_predictive": {
-    "kernel": "knn",
+    "kernel": "knn-cosine",
     "params": {
-      "clf__alpha": 0.1,
-      "clf__kernel": "knn",
-      "clf__n_neighbors": 15
+      "model": "GraphSAGE-end2end",
+      "k": 15,
+      "sage": "64-32",
+      "lr": 0.01,
+      "wd": 5e-05,
+      "drop": 0.3
     },
     "n_nodes_train_original": 1176,
-    "n_nodes_train_after_smote": 1972,
+    "n_nodes_all": 1470,
     "vis_stats": {
       "vis_nodes": 150,
       "vis_edges_directed": 1500,
@@ -86,14 +91,23 @@
       "vis_attrition": 30
     },
     "feat_dim": 51,
-    "graph_type": "LabelSpreading (employee similarity kNN graph)"
+    "graph_type": "GraphSAGE end-to-end (kNN cosine + SAGE 64-32, no SVM)",
+    "stability": {
+      "seeds": {
+        "42": 0.7539,
+        "1": 0.778,
+        "7": 0.7608
+      },
+      "mean": 0.7642,
+      "std": 0.0101
+    }
   },
   "causal": {
     "treatment": "OverTime",
     "outcome": "Attrition",
-    "ate": 0.2113345365028126,
-    "placebo_ate": -0.0009051817253312544,
-    "random_common_cause_ate": 0.21142044709030994,
+    "ate": 0.21133453650281211,
+    "placebo_ate": -0.0009051817253310074,
+    "random_common_cause_ate": 0.21142044709031313,
     "n_confounders": 17,
     "confounders": [
       "Age",
@@ -114,5 +128,10 @@
       "NumCompaniesWorked",
       "DistanceFromHome"
     ]
+  },
+  "best_model_policy": {
+    "by_metric_roc_auc": "RandomForest (0.7990)",
+    "by_policy_main": "Graph (SAGE-thuan k=15, official AUC 0.7539; best-tune 0.790; stability mean 0.7642+-0.0101)",
+    "note": "Graph la mo hinh chinh theo dinh huong; RF/XGB la baseline so sanh"
   }
 }

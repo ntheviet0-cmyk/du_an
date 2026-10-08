@@ -1,0 +1,5 @@
+model,src,roc_auc
+RF,GĐ3-ref 5 folds,0.8051
+XGBoost,GĐ3-ref 5 folds,0.8281
+RF,GĐ1-smoke 1 fold base,0.7798
+XGBoost,GĐ1-smoke 1 fold base,0.7934

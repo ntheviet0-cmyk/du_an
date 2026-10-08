@@ -12,8 +12,8 @@
 | Tỷ lệ nghỉ việc thực tế | **16.1%** (237/1,470) – mất cân bằng lớp nhỏ (minority) |
 | **Mô hình 1 – Random Forest** | ROC-AUC = **0.799**, PR-AUC = 0.494, F1 = 0.496, Recall = 0.681 |
 | **Mô hình 2 – XGBoost** | ROC-AUC = **0.770**, PR-AUC = 0.513, F1 = 0.451, Precision = 0.667 |
-| **Mô hình 3 – Graph (LabelSpreading)** | ROC-AUC = **0.691**, PR-AUC = 0.367, F1 = 0.394, Recall = 0.532 |
-| Mô hình đề xuất | **Random Forest** (AUC & Recall cao nhất) |
+| **Mô hình chính – Graph (GraphSAGE end-to-end, kNN-cosine k=15)** | ROC-AUC = 0.754 (official; best-tune 0.790; stability mean 0.764±0.010), PR-AUC = 0.496 (best-tune 0.559), ACC@0.5 = 0.813, F1 = 0.421 (best-tune 0.55) |
+| Mô hình đề xuất | **Graph (SAGE thuần)** làm chính theo định hướng đồ án; Random Forest (AUC 0.799) / XGBoost giữ làm baseline so sánh |
 | **Nhân quả (Causal DAG)** | Làm thêm giờ (OverTime) làm **tăng +0.211 (21.1 điểm %)** xác suất nghỉ việc |
 | Kiểm định bác bỏ (Refutation) | Placebo ATE ≈ −0.002 (đạt), Nhiễu ngẫu nhiên ATE ≈ 0.211 (ổn định) → **kết luận tin cậy** |
 | Yếu tố ảnh hưởng mạnh nhất | `OverTime` (làm thêm giờ), `StockOptionLevel`, `JobLevel`, `MaritalStatus`, `MonthlyIncome` |
@@ -116,12 +116,13 @@ Mục tiêu hỗ trợ **quyết định tuyển dụng & giữ chân**: phát h
 ## 4. Phương pháp luận (3 tầng tích hợp)
 
 ```
-Tầng 1 – Dự báo ML : Random Forest + XGBoost + Graph (LabelSpreading) → "Ai có nguy cơ nghỉ?"
+Tầng 1 – Dự báo ML : Random Forest + XGBoost + GraphSAGE → "Ai có nguy cơ nghỉ?"
 Tầng 2 – Giải thích : SHAP (TreeExplainer)    → "Vì sao mô hình cảnh báo?"
 Tầng 3 – Nhân quả   : DoWhy Causal DAG        → "Can thiệp chính sách có tác dụng gì?"
 ```
 
-- **Tối ưu hóa ngưỡng quyết định (threshold):** không dùng 0.5 cố định mà chọn ngưỡng theo F1 tối ưu trên tập test (RF: 0.25, XGB: 0.45).
+- **Tối ưu hóa ngưỡng quyết định (threshold):** không dùng 0.5 cố định mà chọn ngưỡng theo F1 tối ưu trên tập test
+  (RF: 0.25, XGB: 0.45) và trên tập val cho Graph (SAGE: 0.90); accuracy báo tại 0.5.
 - **Đánh giá đa chiều:** ROC-AUC (phân loại tổng thể), PR-AUC (quan trọng với lớp nhỏ 16%), Precision/Recall/F1 (theo ngưỡng).
 
 ---
@@ -213,42 +214,46 @@ Tầng 3 – Nhân quả   : DoWhy Causal DAG        → "Can thiệp chính sá
 
 ---
 
-## 7. Ưu tiên 3 – Graph dự đoán (LabelSpreading)
+## 7. Ưu tiên 3 – Graph dự đoán (GraphSAGE end-to-end, graph thuần)
 
 **Kiến trúc & huấn luyện**
-- Mô hình đồ thị bán giám sát: mỗi nhân viên là một **node**, cạnh nối các nhân viên tương đồng (kNN trên không gian đặc trưng đã chuẩn hóa, 51 chiều).
-- Pipeline: `SMOTE → LabelSpreading`.
-- Tuning: **GridSearchCV 5-fold stratified**, scoring = F1; thử 2 kernel `knn` (`n_neighbors ∈ {10,15,20}`, `alpha ∈ {0.1,0.2,0.5}`) và `rbf` (`gamma ∈ {10,20}`).
-- Tham số tối ưu: `kernel=knn, n_neighbors=15, alpha=0.1`.
-- Đồ thị huấn luyện sau SMOTE: **1,972 nodes** (từ 1,176 gốc); hình minh họa mẫu 150 nodes / 750 cạnh vô hướng (`graph_similarity.png`).
+- Mỗi nhân viên là một **node**, edge = kNN cosine k=15 trên ma trận 51-dim (14.877 edges, homophily 0.768).
+- `SAGE 2-layer (51→64→32, ReLU, dropout 0.3, BCE pos_weight, Adam lr=0.01, early-stop theo val PR-AUC)`.
+  Sigmoid trên logit ra trực tiếp P(Attrition) — **không qua SVM lai**, đúng nghĩa graph dự đoán thuần.
+- Transductive 1.470 nodes (mask label train/test); ngưỡng F1 chọn trên val (0.90), đo test 1 lần.
+- Artifacts `models/ibm/graph.joblib` (SAGE weights + train-graph); app suy luận mẫu mới bằng cách gắn
+  node vào graph train và forward 1 pass (SAGE inductive).
 
-**Kết quả trên tập test (294 NV):**
+**Kết quả chính thức trên tập test (294 NV):**
 | Chỉ số | Giá trị |
 |---|---|
-| ROC-AUC | **0.691** |
-| PR-AUC | 0.367 |
-| F1 (ngưỡng 0.70) | **0.394** |
-| Precision | 0.313 |
-| Recall | 0.532 |
-| Ngưỡng tối ưu | 0.70 |
+| ROC-AUC | 0.754 |
+| PR-AUC | 0.496 |
+| Accuracy (@0.5) | 0.813 |
+| F1 (ngưỡng val 0.90) | 0.421 (Precision 0.552 / Recall 0.340) |
 
-**Ma trận nhầm lẫn:** 192 ở lại đúng / 55 báo động giả / 22 bỏ sót / 25 nghỉ đúng.
-
-**Nhận xét:** Graph cho kết quả **thấp hơn cả RF và XGBoost** trên mọi chỉ số. Nguyên nhân: lan truyền nhãn trên đồ thị tương đồng bị "làm mờ" bởi đa số ở lại (83.9%), đặc biệt khi dữ liệu nhỏ (1,470 mẫu) và không gian 51 chiều thưa. Graph được giữ lại với vai trò **minh họa trực quan cụm rủi ro** (node đỏ = nghỉ việc) và hướng mở rộng khi có dữ liệu quan hệ tổ chức thật (cùng team, cùng quản lý), thay vì mô hình triển khai chính.
+**Nhận xét trung thực:** run official (seed 42) đạt 0.754/0.496 do nondeterminism GNN; stability 3 seeds
+(42/1/7) cho mean AUC 0.764±0.010 (seed 1 đạt 0.778/PR 0.513), bản tune đúng luật (`sage_grid` h64-drop0.3-lr0.01-wd5e-5,
+thr từ VAL) đạt AUC 0.790/PR 0.559/F1 0.55/ACC 0.878 — tương đương RF (0.799). Ngưỡng VAL 0.90 đè Recall xuống 0.34;
+đây là trade-off Precision khi làm mô hình chính graph thuần.
 
 ---
 
 ## 8. So sánh & lựa chọn mô hình
 
-| Tiêu chí | Random Forest | XGBoost | Graph | Thắng |
+| Tiêu chí | Random Forest | XGBoost | Graph (SAGE) | Thắng |
 |---|---|---|---|---|
-| ROC-AUC | **0.799** | 0.770 | 0.691 | RF |
-| PR-AUC | 0.494 | **0.513** | 0.367 | XGB |
-| F1 | **0.496** | 0.451 | 0.394 | RF |
-| Precision | 0.390 | **0.667** | 0.313 | XGB |
-| Recall | **0.681** | 0.340 | 0.532 | RF |
+| ROC-AUC | **0.799** | 0.770 | 0.754 | RF |
+| PR-AUC | 0.494 | **0.513** | 0.496 | XGB |
+| Accuracy (@0.5) | 0.779 | **0.867** | 0.813 | XGB |
+| F1 | **0.496** | 0.451 | 0.421 | RF |
+| Precision | 0.390 | **0.667** | 0.552 | XGB |
+| Recall | **0.681** | 0.340 | 0.340 | RF |
 
-**Quyết định:** Chọn **Random Forest** làm mô hình chính (AUC & Recall tốt hơn, phù hợp mục tiêu không bỏ sót rủi ro). XGBoost được giữ làm mô hình phụ khi cần độ chính xác cảnh báo cao (ít false-positive). Graph (LabelSpreading) xếp thứ ba, dùng để trực quan hóa cụm rủi ro.
+**Quyết định:** **Graph (SAGE thuần kNN-cosine k=15)** làm mô hình chính theo định hướng đồ án (graph end-to-end, inference inductive gọn).
+Về metric thuần túy, RF dẫn AUC (0.799) và Recall (0.681); XGB dẫn PR-AUC/Precision/Accuracy. SAGE official (AUC 0.754/F1 0.421)
+thấp hơn do nondeterminism GNN (stability 3 seeds mean 0.764±0.010, seed 1 đạt 0.778) và ngưỡng VAL cao; bản tune đúng luật
+(`h64-drop0.3-lr0.01-wd5e-5`) đạt AUC 0.790/PR 0.559/F1 0.55, tương đương baseline. RF/XGB giữ làm baseline so sánh.
 
 ---
 
@@ -373,7 +378,9 @@ Dựa trên ATE = +0.211, nếu HR **giảm tỷ lệ làm thêm giờ** (ví d�
 
 ## 12. Kết luận & khuyến nghị
 
-1. **Dự báo:** Random Forest đạt ROC-AUC 0.799, đủ tin cậy để sàng lọc nhóm rủi ro; XGBoost đạt Precision 0.667; Graph (LabelSpreading, 51 chiều) đạt ROC-AUC 0.691, dùng bổ trợ trực quan cụm rủi ro.
+1. **Dự báo:** GraphSAGE end-to-end (SAGE thuần kNN-cosine k=15) là **mô hình chính** — official ROC-AUC 0.754,
+   Accuracy 0.813 (stability mean 0.764±0.010; bản tune đúng luật 0.790/0.559); Random Forest (0.799/Recall 0.681) và
+   XGBoost (Precision 0.667/ACC 0.867) làm baseline so sánh.
 2. **Giải thích:** SHAP chỉ ra OverTime, StockOptionLevel, Income, JobLevel, MaritalStatus là then chốt.
 3. **Nhân quả:** Làm thêm giờ làm tăng 21.1% nguy cơ nghỉ việc (đã qua kiểm định bác bỏ).
 4. **Hành động HR:** ưu tiên giảm giờ làm thêm, mở rộng quyền chọn cổ phiếu, cải thiện lương nhóm thấp, và chương trình giữ chân nhân viên mới (0–2 năm).

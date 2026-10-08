@@ -1,0 +1,21 @@
+seed: 42
+data_path: "attrition-gat/data/raw.csv"
+data_sha256: "A5C31E38BD7FAFC9BC333884EB181B06B41B8E5E488E8F7CCB27199FB3BE7659"
+target: "Attrition"
+drop_cols: ["EmployeeCount", "EmployeeNumber", "Over18", "StandardHours"]
+ohe_cols: ["Department", "EducationField", "Gender", "JobRole", "MaritalStatus", "OverTime"]
+ordinal_col: "BusinessTravel"
+ordinal_mapping: {"Non-Travel": 0, "Travel_Rarely": 1, "Travel_Frequently": 2}
+log1p_cols: ["MonthlyIncome", "TotalWorkingYears", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"]
+# engineered (base + 3 cot nay = feature set "eng")
+engineered: true
+cv:
+  n_splits: 5
+  n_repeats: 5
+  val_size: 0.2
+  random_state: 42
+smoke:
+  repeat: 0
+  fold: 0
+  n_trials: 3
+  timeout_per_model: 600

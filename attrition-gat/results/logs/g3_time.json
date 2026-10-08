@@ -1,0 +1,10 @@
+{
+  "total_s_reconstructed_from_console": 5723,
+  "total_h": 1.59,
+  "device": "cuda",
+  "note": "g3_time.json bi ghi de boi lan --resume (aggregation-only); so nay tai dung tu log console theo tung config/fold: RF/XGB ~1-6s, GAT k=10 ~7-130s/3seeds, k=20 ~140-235s/3seeds. Lan chay sau phai log incremental.",
+  "configs": 11,
+  "folds": 5,
+  "seeds": 3,
+  "n_gat_trainings": 165
+}

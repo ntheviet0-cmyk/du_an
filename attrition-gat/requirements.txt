@@ -1,0 +1,9 @@
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.8.0
+xgboost==2.0.3
+optuna==5.0.0
+pyyaml>=6.0
+# torch + torch-geometric: cai rieng theo CUDA/CPU, khong pin o day
+# torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128
+# torch-geometric==2.8.0

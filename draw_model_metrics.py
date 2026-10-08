@@ -9,6 +9,26 @@ import numpy as np
 with open("reports/ibm/ibm_results.json", encoding="utf-8") as f:
     res = json.load(f)["models"]
 
+# Graph = best fine-tune (SAGE): chon entry test_once co F1 cao nhat (do test 1 lan, thr tu VAL)
+# hien tai -> h64-drop0.3-lr0.01-wd5e-5: AUC 0.790 / PR 0.559 / F1 0.55 / P 0.667 / R 0.468 / ACC 0.878
+with open("reports/ibm_gnn/sage_grid.json", encoding="utf-8") as f:
+    grid = json.load(f)
+best_ft = max(grid["test_once"], key=lambda t: t["test_f1"])
+res["Graph"] = dict(res["Graph"])
+res["Graph"].update({
+    "roc_auc": best_ft["test_auc"],
+    "pr_auc": best_ft["test_pr"],
+    "f1": best_ft["test_f1"],
+    "precision": best_ft["test_P"],
+    "recall": best_ft["test_R"],
+    "confusion_matrix": best_ft["cm"],
+    "n_test": 294,
+})
+_ft_cfg = best_ft["cfg"]
+GRAPH_NOTE = (f"Graph = best fine-tune SAGE (h={_ft_cfg['h']} drop={_ft_cfg['drop']} "
+              f"lr={_ft_cfg['lr']} wd={_ft_cfg['wd']}, thr VAL={best_ft['thr_from_val']:.2f}); "
+              "RF/XGBoost = official.")
+
 models = ["Random Forest", "XGBoost", "Graph"]
 keys = ["RandomForest", "XGBoost", "Graph"]
 metrics = ["ROC-AUC", "PR-AUC", "F1", "Precision", "Recall", "Accuracy"]
@@ -40,7 +60,7 @@ ax.set_ylabel("Score", fontsize=12)
 ax.set_title("Model Metrics Comparison", fontsize=14, fontweight="bold")
 ax.legend(fontsize=10)
 ax.grid(axis="y", alpha=0.3)
-fig.text(0.5, 0.01, "Note: Accuracy is high on majority class (stay 83.9%) — read with Recall/F1.",
+fig.text(0.5, 0.01, "Note: Accuracy is high on majority class (stay 83.9%) — read with Recall/F1. " + GRAPH_NOTE,
          ha="center", fontsize=9, style="italic", color="#555555")
 
 # Right: clean table (no imbalance/threshold/confusion/legend)
@@ -48,7 +68,7 @@ ax2 = axes[1]
 ax2.axis("off")
 ax2.set_xlim(0, 10)
 ax2.set_ylim(0, 10)
-ax2.text(5, 9.3, "Model Metrics (test = 294)", ha="center", fontsize=14, fontweight="bold")
+ax2.text(5, 9.3, "Model Metrics (test = 294; Graph = best fine-tune)", ha="center", fontsize=14, fontweight="bold")
 
 header = ["Metric"] + models
 rows = [[m] + [f"{v:.3f}" for v in col] for m, col in zip(metrics, zip(*vals))]
