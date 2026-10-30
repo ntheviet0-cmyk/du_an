@@ -1,0 +1,4 @@
+﻿model,threshold,TN_o_lai_dung,FP_bao_dong_gia,FN_bo_sot,TP_bat_dung,precision,recall,f1
+Random Forest,0.25,197,50,15,32,0.39,0.681,0.496
+XGBoost,0.45,239,8,31,16,0.667,0.34,0.451
+GraphSAGE,0.8,235,12,25,22,0.647,0.468,0.543

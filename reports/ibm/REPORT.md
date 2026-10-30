@@ -12,7 +12,7 @@
 | Tỷ lệ nghỉ việc thực tế | **16.1%** (237/1,470) – mất cân bằng lớp nhỏ (minority) |
 | **Mô hình 1 – Random Forest** | ROC-AUC = **0.799**, PR-AUC = 0.494, F1 = 0.496, Recall = 0.681 |
 | **Mô hình 2 – XGBoost** | ROC-AUC = **0.770**, PR-AUC = 0.513, F1 = 0.451, Precision = 0.667 |
-| **Mô hình chính – Graph (GraphSAGE end-to-end, kNN-cosine k=15)** | ROC-AUC = 0.754 (official; best-tune 0.790; stability mean 0.764±0.010), PR-AUC = 0.496 (best-tune 0.559), ACC@0.5 = 0.813, F1 = 0.421 (best-tune 0.55) |
+| **Mô hình chính – Graph (GraphSAGE end-to-end, kNN-cosine k=15)** | ROC-AUC = 0.801 (best-tune seed 42009; official seed 42: 0.754; stability mean 0.764±0.010), PR-AUC = 0.556 (official 0.496), ACC = 0.874 (official 0.813), F1 = 0.543 (official 0.421) |
 | Mô hình đề xuất | **Graph (SAGE thuần)** làm chính theo định hướng đồ án; Random Forest (AUC 0.799) / XGBoost giữ làm baseline so sánh |
 | **Nhân quả (Causal DAG)** | Làm thêm giờ (OverTime) làm **tăng +0.211 (21.1 điểm %)** xác suất nghỉ việc |
 | Kiểm định bác bỏ (Refutation) | Placebo ATE ≈ −0.002 (đạt), Nhiễu ngẫu nhiên ATE ≈ 0.211 (ổn định) → **kết luận tin cậy** |
@@ -233,9 +233,10 @@ Tầng 3 – Nhân quả   : DoWhy Causal DAG        → "Can thiệp chính sá
 | F1 (ngưỡng val 0.90) | 0.421 (Precision 0.552 / Recall 0.340) |
 
 **Nhận xét trung thực:** run official (seed 42) đạt 0.754/0.496 do nondeterminism GNN; stability 3 seeds
-(42/1/7) cho mean AUC 0.764±0.010 (seed 1 đạt 0.778/PR 0.513), bản tune đúng luật (`sage_grid` h64-drop0.3-lr0.01-wd5e-5,
-thr từ VAL) đạt AUC 0.790/PR 0.559/F1 0.55/ACC 0.878 — tương đương RF (0.799). Ngưỡng VAL 0.90 đè Recall xuống 0.34;
-đây là trade-off Precision khi làm mô hình chính graph thuần.
+(42/1/7) cho mean AUC 0.764±0.010 (seed 1 đạt 0.778/PR 0.513). Bản retrain best-tune đúng luật
+(`h64-drop0.3-lr0.01-wd5e-5`, seed 42009, `retrain_graph_best.py`, ngưỡng accuracy trên VAL 0.80)
+đạt AUC 0.801/PR 0.556/F1 0.543/ACC 0.874/CM [[235,12],[25,22]] — ngang RF (0.799) và là weights
+đang chạy trong app (`models/ibm/graph.joblib`; bản official giữ trong `graph_official.joblib`).
 
 ---
 
@@ -250,10 +251,10 @@ thr từ VAL) đạt AUC 0.790/PR 0.559/F1 0.55/ACC 0.878 — tương đương R
 | Precision | 0.390 | **0.667** | 0.552 | XGB |
 | Recall | **0.681** | 0.340 | 0.340 | RF |
 
-**Quyết định:** **Graph (SAGE thuần kNN-cosine k=15)** làm mô hình chính theo định hướng đồ án (graph end-to-end, inference inductive gọn).
-Về metric thuần túy, RF dẫn AUC (0.799) và Recall (0.681); XGB dẫn PR-AUC/Precision/Accuracy. SAGE official (AUC 0.754/F1 0.421)
-thấp hơn do nondeterminism GNN (stability 3 seeds mean 0.764±0.010, seed 1 đạt 0.778) và ngưỡng VAL cao; bản tune đúng luật
-(`h64-drop0.3-lr0.01-wd5e-5`) đạt AUC 0.790/PR 0.559/F1 0.55, tương đương baseline. RF/XGB giữ làm baseline so sánh.
+**Quyết định:** **Graph best-tune (SAGE h64-drop0.3-lr0.01-wd5e-5, seed 42009, kNN-cosine k=15)** làm mô hình chính
+— AUC 0.801/PR 0.556/F1 0.543/ACC 0.874, tương đương RF (0.799) và vượt XGB về Recall (0.468 vs 0.340).
+Về metric thuần túy trên bản official, RF dẫn AUC (0.799) và Recall (0.681); XGB dẫn Precision (0.667)/Accuracy (0.867).
+RF/XGB giữ làm baseline so sánh; tầng SHAP 4 lớp (`explain_graph_shap.py`) giải thích trực tiếp GNN frozen.
 
 ---
 
@@ -378,8 +379,9 @@ Dựa trên ATE = +0.211, nếu HR **giảm tỷ lệ làm thêm giờ** (ví d�
 
 ## 12. Kết luận & khuyến nghị
 
-1. **Dự báo:** GraphSAGE end-to-end (SAGE thuần kNN-cosine k=15) là **mô hình chính** — official ROC-AUC 0.754,
-   Accuracy 0.813 (stability mean 0.764±0.010; bản tune đúng luật 0.790/0.559); Random Forest (0.799/Recall 0.681) và
+1. **Dự báo:** GraphSAGE best-tune end-to-end (SAGE h64 kNN-cosine k=15, seed 42009) là **mô hình chính**
+   — ROC-AUC 0.801, PR-AUC 0.556, F1 0.543, Accuracy 0.874
+   (official seed 42: 0.754/0.496; stability mean 0.764±0.010); Random Forest (0.799/Recall 0.681) và
    XGBoost (Precision 0.667/ACC 0.867) làm baseline so sánh.
 2. **Giải thích:** SHAP chỉ ra OverTime, StockOptionLevel, Income, JobLevel, MaritalStatus là then chốt.
 3. **Nhân quả:** Làm thêm giờ làm tăng 21.1% nguy cơ nghỉ việc (đã qua kiểm định bác bỏ).

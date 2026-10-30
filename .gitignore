@@ -1,0 +1,12 @@
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+credentials*.json
+
+# Local Python artifacts
+__pycache__/
+*.py[cod]

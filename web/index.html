@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>HR Giữ chân — Biết hôm nay cần giữ ai</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#content">Bỏ qua điều hướng, tới nội dung chính</a>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v10m0 0-4-4m4 4 4-4M5 20h14"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v6H7z"/></symbol>
+  <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11.5v5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M15.5 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20v-6M11 20V8M17 20v-10M3 20h18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3 20h18z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M9 12h6M9 16h4"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+</svg>
+
+<div class="nav-overlay" id="nav-overlay" hidden></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">GC</div>
+        <div class="brand-text"><b>HR Giữ chân</b><small>Biết hôm nay cần giữ ai</small></div>
+      </div>
+      <button class="btn ghost sm collapse-btn" id="btn-collapse" aria-label="Thu gọn thanh điều hướng" aria-expanded="true">
+        <svg class="icon" aria-hidden="true"><use href="#i-chev-right"/></svg>
+      </button>
+    </div>
+    <nav class="nav" id="nav" aria-label="Công việc chính">
+      <button data-page="tong-quan" class="active"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg><span class="nav-label">Tổng quan</span></button>
+      <button data-page="uu-tien"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span class="nav-label">Cần giữ chân ngay</span></button>
+      <button data-page="nhan-vien"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span class="nav-label">Nhân viên</span></button>
+      <button data-page="nguyen-nhan"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="nav-label">Nguyên nhân nghỉ việc</span></button>
+      <button data-page="chinh-sach"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg><span class="nav-label">Chính sách</span></button>
+    </nav>
+    <div class="side-foot">
+      <div class="side-tools">
+        <button class="btn ghost sm block" data-page="gioi-thieu" id="btn-help">
+          <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><span class="nav-label">Độ tin cậy</span>
+        </button>
+        <label class="switch" title="Bật hoặc tắt các đoạn giải thích thêm">
+          <input type="checkbox" id="explain-toggle" checked>
+          <span class="track" aria-hidden="true"></span>
+          <span class="nav-label">Giải thích</span>
+        </label>
+      </div>
+      <div class="side-user">
+        <div class="avatar" aria-hidden="true">HR</div>
+        <div class="side-user-text"><b>Nhân sự</b><small>Dữ liệu nội bộ, không gửi đi đâu</small></div>
+      </div>
+      <p class="side-note">Công cụ chỉ hỗ trợ, quyết định cuối cùng vẫn là của anh chị làm nhân sự.</p>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar-mobile">
+      <button class="btn ghost sm" id="btn-menu" aria-label="Mở menu" aria-expanded="false">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <div class="brand-mark" aria-hidden="true">GC</div>
+      <b>HR Giữ chân</b>
+    </div>
+    <main class="content" id="content">
+
+  <!-- 1. TONG QUAN -->
+  <section class="page active" id="page-tong-quan" aria-label="Tổng quan">
+    <div class="page-head">
+      <div class="head-row">
+        <div>
+          <div class="eyebrow" id="ov-date"></div>
+          <h1 id="hero-title">Chào buổi sáng.</h1>
+          <p class="page-sub" id="hero-sub"></p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" data-goto="uu-tien">Xem ai cần giữ ngay
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpi-row"></div>
+    <div class="card progress-card" id="ov-progress" hidden></div>
+
+    <h2 class="sec">Ba việc cần làm hôm nay</h2>
+    <p class="sec-sub">Việc nào ghi Cần làm ngay thì nên xong trong hôm nay hoặc ngày mai.</p>
+    <div id="todo-list"></div>
+
+    <h2 class="sec">Nhóm nào cần chú ý nhiều nhất</h2>
+    <p class="sec-sub explain">Thanh càng dài nghĩa là nhóm đó có nhiều người muốn nghỉ hơn. Màu đỏ là mức cao, màu cam là mức cần theo dõi, màu xanh là mức ổn định.</p>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Mức cần giữ chân theo phòng ban</div>
+        <div id="chart-dept"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Mức cần giữ chân theo thâm niên</div>
+        <div id="chart-tenure"></div>
+      </div>
+    </div>
+    <div class="conclusion" id="dept-conclusion"></div>
+  </section>
+
+  <!-- 2. CAN GIU CHAN NGAY -->
+  <section class="page" id="page-uu-tien" aria-label="Cần giữ chân ngay">
+    <div class="page-head">
+      <div class="eyebrow">Việc trong tuần</div>
+      <h1>Danh sách cần giữ chân ngay</h1>
+      <p class="page-sub">Những người nên gặp trong tuần này. Mỗi dòng đã ghi sẵn lý do và việc nên làm. Mức Cao nghĩa là nên gặp ngay trong 1 đến 2 ngày tới.</p>
+    </div>
+
+    <div class="toolbar" role="search">
+      <div class="tb-row">
+        <div class="searchbox">
+          <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="text" id="f-q" placeholder="Tìm theo mã NV-0012, chức danh hoặc phòng ban" aria-label="Tìm nhân viên">
+        </div>
+        <div class="seg" id="band-seg" role="group" aria-label="Lọc theo mức cần giữ chân"></div>
+        <div class="pop-wrap">
+          <button class="btn" id="btn-filters" aria-expanded="false" aria-controls="filters-popover">
+            <svg class="icon" aria-hidden="true"><use href="#i-filter"/></svg>Bộ lọc
+          </button>
+          <div class="pop" id="filters-popover" hidden>
+            <div class="field"><label for="f-dept">Phòng ban</label><select id="f-dept"></select></div>
+            <div class="field"><label for="f-tenure">Thâm niên</label><select id="f-tenure">
+              <option value="">Tất cả thâm niên</option>
+              <option value="0-2">Mới vào: 0 đến 2 năm</option>
+              <option value="3-5">Đã quen việc: 3 đến 5 năm</option>
+              <option value="6-99">Gắn bó lâu: trên 5 năm</option>
+            </select></div>
+            <div class="field"><label for="f-sort">Sắp xếp</label><select id="f-sort">
+              <option value="risk-desc" selected>Người cần giữ nhất lên trước</option>
+              <option value="tenure-asc">Thâm niên ít lên trước</option>
+              <option value="income-asc">Thu nhập thấp lên trước</option>
+            </select></div>
+            <div class="btn-row">
+              <button class="btn sm" id="btn-clear-filters">Xóa bộ lọc</button>
+            </div>
+          </div>
+        </div>
+        <select id="f-band" class="visually-hidden" tabindex="-1" aria-hidden="true">
+          <option value="red,amber" selected>Cần giữ ngay và cần theo dõi</option>
+          <option value="red">Cao — cần gặp ngay</option>
+          <option value="amber">Trung bình — cần theo dõi</option>
+          <option value="green">Thấp — đang ổn định</option>
+          <option value="red,amber,green">Tất cả mọi người</option>
+        </select>
+        <button class="btn" id="btn-export">
+          <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Xuất danh sách
+        </button>
+        <button class="btn ghost" id="btn-print" aria-label="In báo cáo gọn">
+          <svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>
+        </button>
+      </div>
+      <div class="tb-row">
+        <div class="seg" id="status-seg" role="group" aria-label="Lọc theo trạng thái liên hệ"></div>
+        <span class="result-count" id="risk-count" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <div class="rows" id="risk-list"></div>
+    <div class="load-more" id="load-more-wrap" hidden>
+      <button class="btn" id="btn-load-more">Xem thêm</button>
+    </div>
+  </section>
+
+  <!-- 3. NHAN VIEN -->
+  <section class="page" id="page-nhan-vien" aria-label="Nhân viên">
+    <div class="page-head">
+      <div class="eyebrow">Tra cứu một người</div>
+      <h1>Xem nguy cơ của một nhân viên</h1>
+      <p class="page-sub">Chọn một ví dụ có sẵn hoặc điền thông tin để xem mức cần giữ chân và việc nên làm. Kết quả chỉ là gợi ý, anh chị quyết định sau khi trò chuyện thực tế.</p>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="card">
+          <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Điền nhanh từ ví dụ thường gặp</div>
+          <div class="preset-strip">
+            <button class="btn sm" data-preset="sales">Nhân viên kinh doanh hay làm thêm</button>
+            <button class="btn sm" data-preset="lab">Kỹ thuật viên mới vào</button>
+            <button class="btn sm" data-preset="mgr">Quản lý đã ổn định</button>
+          </div>
+        </div>
+        <form id="profile-form" onsubmit="return false;">
+          <fieldset><legend>Thông tin chung</legend><div class="frow" id="fg-personal"></div></fieldset>
+          <fieldset><legend>Công việc hiện tại</legend><div class="frow" id="fg-job"></div></fieldset>
+          <fieldset><legend>Mức hài lòng <span class="muted">(từ rất thấp đến rất cao)</span></legend><div class="frow" id="fg-sat"></div></fieldset>
+          <button class="btn primary block" id="btn-score">Xem nguy cơ của người này</button>
+        </form>
+      </div>
+      <div class="side-sticky">
+        <div id="profile-result" aria-live="polite">
+          <div class="empty">
+            <div class="empty-ico"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg></div>
+            <b>Chưa có kết quả</b><br>Điền thông tin bên trái rồi bấm “Xem nguy cơ của người này” để xem mức cần giữ chân và việc nên làm.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. NGUYEN NHAN -->
+  <section class="page" id="page-nguyen-nhan" aria-label="Nguyên nhân nghỉ việc">
+    <div class="page-head">
+      <div class="eyebrow">Vì sao mọi người nghỉ</div>
+      <h1>Nguyên nhân nghỉ việc</h1>
+      <p class="page-sub">Ba câu trả lời ngắn gọn: nhóm nào nghỉ nhiều, điều gì ảnh hưởng nhiều nhất, và một trường hợp cụ thể trông như thế nào.</p>
+    </div>
+
+    <div class="insight" id="insight-top"></div>
+
+    <h2 class="sec">Điều gì ảnh hưởng nhiều nhất</h2>
+    <p class="sec-sub explain">Thanh càng dài nghĩa là điều đó càng liên quan đến việc nghỉ. Con số bên cạnh chỉ để so sánh, thanh dài hơn là quan trọng hơn.</p>
+    <div class="card" id="tbl-grouped"></div>
+
+    <h2 class="sec">Từng nhóm có điểm gì chung</h2>
+    <p class="sec-sub explain">Mỗi dòng là một nhóm nhỏ trong công ty. Cột cuối ghi 3 điểm chung dễ thấy nhất của nhóm đó.</p>
+    <div class="card" id="tbl-cohort"></div>
+
+    <h2 class="sec">Xem một trường hợp cụ thể</h2>
+    <div class="card">
+      <div class="case-explorer">
+        <div>
+          <div class="card-title">Chọn trường hợp</div>
+          <div class="case-list" id="case-list" role="listbox" aria-label="Danh sách trường hợp"></div>
+        </div>
+        <div class="case-detail-panel" id="case-detail"></div>
+      </div>
+      <p class="muted explain">Màu đỏ là điểm làm tăng khả năng nghỉ, màu xanh là điểm đang giữ người ở lại. Trung bình cả công ty, cứ 100 người thì khoảng 16 người nghỉ.</p>
+    </div>
+  </section>
+
+  <!-- 5. CHINH SACH -->
+  <section class="page" id="page-chinh-sach" aria-label="Chính sách">
+    <div class="page-head">
+      <div class="eyebrow">Bàn trước khi làm</div>
+      <h1>Xem trước hiệu quả của một chính sách</h1>
+      <p class="page-sub">Chọn một thay đổi mà công ty đang cân nhắc, hệ thống sẽ ước tính giữ được khoảng bao nhiêu người. Đây là con số ước tính để bàn bạc, không phải lời hứa chắc chắn.</p>
+    </div>
+
+    <div class="steps" aria-hidden="true">
+      <span class="step on"><span class="n">1</span>Chọn thay đổi</span>
+      <span class="step on"><span class="n">2</span>Chọn số người áp dụng</span>
+      <span class="step on"><span class="n">3</span>So sánh và mang đi họp</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Bước 1: chọn thay đổi muốn thử</div>
+      <div class="policy-pick" id="policy-pick">
+        <button class="pick active" data-policy="ot">
+          <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-clock"/></svg></span>
+          <span><span class="pick-title">Giảm làm thêm giờ</span><span class="pick-sub">Cho nhóm đang làm thêm nhiều</span></span>
+        </button>
+        <button class="pick" data-policy="buddy">
+          <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-users"/></svg></span>
+          <span><span class="pick-title">Bổ sung người hướng dẫn</span><span class="pick-sub">Cho nhân viên mới vào</span></span>
+        </button>
+        <button class="pick" data-policy="pay">
+          <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-chart"/></svg></span>
+          <span><span class="pick-title">Xem lại thu nhập</span><span class="pick-sub">Cho nhóm thu nhập thấp</span></span>
+        </button>
+      </div>
+      <p class="muted explain" id="policy-desc" style="margin-top:10px;"></p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Bước 2: chọn số người áp dụng</div>
+      <div class="frow slider-row" style="grid-template-columns:1fr 1fr;">
+        <div class="slider-field">
+          <label for="s-cover">Số người được áp dụng: <b id="v-cover">100</b> người</label>
+          <input type="range" id="s-cover" min="20" max="500" step="10" value="100">
+        </div>
+        <div class="slider-field">
+          <label for="s-cp">Chi phí thay một người nghỉ (so với lương năm): <b id="v-cp">100%</b></label>
+          <input type="range" id="s-cp" min="50" max="200" step="10" value="100">
+        </div>
+      </div>
+      <div class="successbox" id="sim-result"></div>
+      <p class="muted explain" id="sim-math"></p>
+      <div class="btn-row">
+        <button class="btn" id="btn-cmp" aria-expanded="false" aria-controls="cmp-body">So sánh với phương án khác</button>
+      </div>
+
+      <div class="cmp-panel" id="cmp-body" hidden>
+        <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Bước 3: phương án B để so sánh</div>
+        <div class="policy-pick" id="policy-pick-b">
+          <button class="pick" data-policy="ot">
+            <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-clock"/></svg></span>
+            <span><span class="pick-title">Giảm làm thêm giờ</span></span>
+          </button>
+          <button class="pick active" data-policy="buddy">
+            <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-users"/></svg></span>
+            <span><span class="pick-title">Bổ sung người hướng dẫn</span></span>
+          </button>
+          <button class="pick" data-policy="pay">
+            <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-chart"/></svg></span>
+            <span><span class="pick-title">Xem lại thu nhập</span></span>
+          </button>
+        </div>
+        <div class="slider-row" style="grid-template-columns:1fr;">
+          <div class="slider-field">
+            <label for="s-cover-b">Phương án B: số người được áp dụng: <b id="v-cover-b">100</b> người</label>
+            <input type="range" id="s-cover-b" min="20" max="500" step="10" value="100">
+          </div>
+        </div>
+        <div class="successbox" id="sim-result-b"></div>
+        <p class="muted" id="sim-math-b"></p>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn primary" id="btn-copy">
+          <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Lấy tóm tắt mang đi họp
+        </button>
+      </div>
+      <pre class="code" id="sim-code" style="display:none"></pre>
+    </div>
+
+    <div class="warnbox">Số trên là ước tính để lập kế hoạch, không phải cam kết với từng người cụ thể. Khi in hoặc chia sẻ, thu nhập chi tiết được che bớt để giữ riêng tư.</div>
+  </section>
+
+  <!-- 6. GIOI THIEU -->
+  <section class="page" id="page-gioi-thieu" aria-label="Giới thiệu và độ tin cậy">
+    <div class="page-head">
+      <div class="eyebrow">Minh bạch</div>
+      <h1>Giới thiệu: cách đánh giá và độ tin cậy</h1>
+      <p class="page-sub">Viết ngắn gọn cho người không làm kỹ thuật.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>Về cách đánh giá</div>
+        <ul class="trust-list">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Hệ thống nhìn vào hồ sơ làm việc hằng ngày như làm thêm giờ, mức hài lòng, thu nhập, thâm niên.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Rồi đối chiếu với những người có hoàn cảnh giống nhau đã nghỉ hoặc ở lại trước đây.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Từ đó xếp mỗi người vào một trong ba mức: Cao là nên gặp ngay, Trung bình là cần theo dõi, Thấp là đang ổn định.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Độ tin cậy của đánh giá</div>
+        <p><span class="parity-badge"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Đã kiểm chứng khớp bản Python — sai số dưới 0,001</span></p>
+        <p style="margin-top:10px;">Đánh giá đáng tin cậy để dùng hằng ngày: trong 10 trường hợp, hệ thống nhận định đúng khoảng 8. Con số này rút ra từ 1.470 hồ sơ nội bộ của công ty. Dù vậy, hệ thống không biết hết chuyện riêng của mỗi người, nên anh chị vẫn trò chuyện trực tiếp trước khi quyết định.</p>
+      </div>
+    </div>
+
+    <h2 class="sec">Bằng chứng kiểm định</h2>
+    <p class="sec-sub explain">Biểu đồ bên dưới là kết quả kiểm định trên dữ liệu nội bộ: khả năng phân biệt người nghỉ và người ở lại, và các yếu tố ảnh hưởng mạnh nhất.</p>
+    <div class="card">
+      <div class="evidence">
+        <figure>
+          <img src="assets/roc_curves.png" alt="Biểu đồ ROC so sánh các mô hình" loading="lazy">
+          <figcaption>Khả năng phân biệt đúng người muốn nghỉ của các mô hình (đường càng cao càng tốt).</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/confusion_matrices_3way.png" alt="Ma trận nhầm lẫn ba mức" loading="lazy">
+          <figcaption>Đối chiếu ba mức Cao — Trung bình — Thấp với thực tế.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>Lưu ý khi dùng chung</div>
+        <p>Dữ liệu trong trang này là nội bộ. Khi in hoặc gửi cho người khác, thu nhập chi tiết được che bớt. Không dùng các thông tin như tuổi, giới tính hay tình trạng hôn nhân để phân biệt đối xử, chỉ dùng để hiểu và hỗ trợ người lao động tốt hơn.</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg>Dữ liệu theo dõi trên máy này</div>
+        <p class="muted">Trạng thái liên hệ và ghi chú của anh chị được lưu ngay trên máy này, không gửi đi đâu cả. Có thể xóa sạch khi cần.</p>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn" id="btn-clear-track">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>Xóa dữ liệu theo dõi
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+      <div class="footer">Nguồn: dữ liệu nội bộ 1.470 nhân viên. Công cụ chỉ hỗ trợ, quyết định cuối cùng là của anh chị làm nhân sự. Khi in, thông tin thu nhập được che bớt.</div>
+    </main>
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-label="Chi tiết nhân viên">
+  <div class="drawer-head">
+    <span class="avatar-sm" id="drawer-avatar" aria-hidden="true"></span>
+    <div class="drawer-title" id="drawer-title"></div>
+    <button class="btn ghost sm" id="btn-drawer-close" aria-label="Đóng chi tiết">
+      <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+ư
+<script src="data/kpi.js"></script>
+<script src="data/vocab.js"></script>
+<script src="data/shap.js"></script>
+<script src="data/risk.js"></script>
+<script src="data/meta.js"></script>
+<script src="data/preproc.js"></script>
+<script src="data/weights.js"></script>
+<script src="data/xtrain.js"></script>
+<script src="data/edges.js"></script>
+<script src="sage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

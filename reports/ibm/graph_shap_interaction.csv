@@ -1,0 +1,6 @@
+﻿metric,value,note
+pair,corr_sv,note
+cat__OverTime_Yes x num__MonthlyIncome,0.265,tuong quan SHAP 2 yeu to tren 14 ca
+cat__OverTime_Yes x num__JobSatisfaction,0.390,tuong quan SHAP 2 yeu to tren 14 ca
+num__MonthlyIncome x num__JobLevel,0.653,tuong quan SHAP 2 yeu to tren 14 ca
+OT Yes + thu nhap thap,5/14 ca,mean_proba=0.998

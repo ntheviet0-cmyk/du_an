@@ -1,0 +1,5 @@
+﻿cohort,n,mean_proba,top1,top2,top3
+Sales,6,0.904,cat__OverTime_Yes,cat__OverTime_No,num__Age
+OT_Yes,8,0.950,cat__OverTime_Yes,num__JobSatisfaction,cat__OverTime_No
+Tenure_0_2,7,0.660,num__JobSatisfaction,num__Age,cat__OverTime_Yes
+Age_u30,6,0.968,num__Age,cat__OverTime_Yes,num__JobSatisfaction

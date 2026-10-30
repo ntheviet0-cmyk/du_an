@@ -226,12 +226,68 @@ elif page.startswith("2"):
             st.progress(float(proba))
             st.caption("Thanh xác suất (0 → 100%)")
 
-        # SHAP waterfall (chi cho tree models; Graph dung lân can tuong dong de giai thich)
+        # SHAP local: tree models dung TreeExplainer; Graph dung KernelSHAP
+        # tren GNN frozen (graph_predict_proba tu graph_shap_lib - khong train lai).
         st.markdown('<div class="section-title">🧩 Tại sao mô hình đưa ra kết quả này?</div>', unsafe_allow_html=True)
         if is_graph:
             st.info("GraphSAGE dự báo end-to-end trên đồ thị tương đồng: mỗi nhân viên là 1 node, "
-                    "model gộp thông tin 15 người giống nhất (SAGE sampling) rồi ra xác suất trực tiếp. "
-                    "Biểu đồ SHAP chi tiết dùng cho Random Forest/XGBoost.")
+                    "model gộp thông tin 15 người giống nhất rồi ra xác suất trực tiếp. "
+                    "Bấm nút dưới để chạy giải thích SHAP cho đúng trường hợp này (GNN giữ nguyên).")
+            if st.button("🔍 Giải thích SHAP cho nhân viên này (~1 phút)", key="shap_graph_btn"):
+                with st.spinner("Đang tính SHAP (GNN frozen, ~6000 lượt đánh giá)..."):
+                    from graph_shap_lib import (format_group_value, format_shap_points,
+                                                get_bundle, graph_predict_proba,
+                                                group_label, grouped_shap,
+                                                plot_grouped_shap)
+                    _b = get_bundle()
+                    _Xt = pre.transform(row_df)
+                    _Xt = _Xt.toarray().astype(np.float32) if hasattr(_Xt, "toarray") else np.asarray(_Xt, np.float32)
+                    _Xtr = _b["X_train"]
+                    _rng = np.random.RandomState(0)
+                    _bg = _Xtr[_rng.choice(len(_Xtr), size=20, replace=False)]
+                    _ex = shap.KernelExplainer(graph_predict_proba, _bg)
+                    _sv = np.asarray(_ex.shap_values(_Xt, nsamples=150)).reshape(-1)
+                    _ev = float(np.atleast_1d(_ex.expected_value)[0])
+                    _gn, _gv, _gd = grouped_shap(
+                        _sv, _Xt[0], feat_names, raw_row=row_df.iloc[0])
+                    _fig, _ax = plt.subplots(figsize=(9, 5))
+                    try:
+                        _hr = json.loads((REP / "hr_dictionary.json").read_text(encoding="utf-8"))
+                    except Exception:
+                        _hr = {}
+                    _shown_idx = plot_grouped_shap(
+                        _ax, _gv, _gn, _gd, hr=_hr, base_value=_ev, prediction=proba)
+                    plt.tight_layout()
+                    st.pyplot(_fig)
+                    _order = np.argsort(_gv)
+                    _up_idx = [j for j in _order[::-1] if _gv[j] > 0][:5]
+                    _dn_idx = [j for j in _order if _gv[j] < 0][:5]
+                    _up = [f"{group_label(_gn[j], _hr, _gd[j])} ({format_shap_points(_gv[j])})" for j in _up_idx]
+                    _dn = [f"{group_label(_gn[j], _hr, _gd[j])} ({format_shap_points(_gv[j])})" for j in _dn_idx]
+                    st.markdown("**Top yếu tố đẩy TĂNG rủi ro:** " +
+                                ("; ".join(_up) if _up else "không có yếu tố làm tăng dự báo."))
+                    st.markdown("**Top yếu tố GIẢM rủi ro:** " +
+                                ("; ".join(_dn) if _dn else "không có yếu tố làm giảm dự báo."))
+                    _fair = " ".join(_up + _dn).lower()
+                    if any(k in _fair for k in ["giới tính", "hôn nhân", "độc thân", "tuổi"]):
+                        st.warning("Lưu ý công bằng: yếu tố nhân khẩu học lọt top — chỉ dùng để thiết kế "
+                                   "chính sách hỗ trợ, không dùng để phân biệt đối xử.")
+                    _rows = []
+                    for _rank, _j in enumerate(_shown_idx, 1):
+                        _rows.append({
+                            "#": _rank,
+                            "Yếu tố HR": group_label(_gn[_j], _hr, _gd[_j]),
+                            "Giá trị": format_group_value(_gn[_j], _gd[_j]),
+                            "Chiều tác động": "Tăng" if _gv[_j] > 0 else "Giảm" if _gv[_j] < 0 else "Không đổi",
+                            "Đóng góp": format_shap_points(_gv[_j]),
+                        })
+                    st.markdown("**Toàn bộ yếu tố góp phần vào dự báo**")
+                    st.dataframe(pd.DataFrame(_rows), hide_index=True, use_container_width=True)
+                    st.caption("Đã gộp 51 cột sau mã hóa thành các nhóm HR gốc có đóng góp khác 0 và sắp xếp theo |SHAP|. "
+                               "Đây là đóng góp vào dự báo của mô hình, không phải kết luận nhân quả. "
+                               f"Base E[f(X)]={_ev:.3f}; tổng SHAP={_gv.sum():.3f}; "
+                               f"sai số cộng tính={abs(_ev + _gv.sum() - proba):.2e}.")
+            st.caption("Xem thêm phân tích SHAP 4 tầng của GraphSAGE ở trang '3. Giải thích SHAP'.")
         else:
             clf = model.named_steps["clf"]
             explainer = shap.TreeExplainer(clf)
@@ -262,12 +318,52 @@ elif page.startswith("2"):
 elif page.startswith("3"):
     st.title("🧩 Giải thích mô hình (SHAP)")
     st.caption("Tầm quan trọng đặc trưng toàn cục — giúp hiểu yếu tố nào thúc đẩy nghỉ việc.")
-    m = st.radio("Chọn mô hình", ["Random Forest", "XGBoost"], horizontal=True)
-    img = "shap_rf.png" if m == "Random Forest" else "shap_xgboost.png"
-    st.image(str(REP / img), use_container_width=True)
-    st.info("Mỗi điểm là một nhân viên; vị trí xa 0 = ảnh hưởng mạnh đến dự đoán. "
-            "Màu đỏ = giá trị đặc trưng cao, xanh = thấp. OverTime, StockOptionLevel, Income, "
-            "JobLevel, MaritalStatus consistently nằm top đầu.")
+    m = st.radio("Chọn mô hình", ["Random Forest", "XGBoost", "GraphSAGE"], horizontal=True)
+    if m != "GraphSAGE":
+        img = "shap_rf.png" if m == "Random Forest" else "shap_xgboost.png"
+        st.image(str(REP / img), use_container_width=True)
+        st.info("Mỗi điểm là một nhân viên; vị trí xa 0 = ảnh hưởng mạnh đến dự đoán. "
+                "Màu đỏ = giá trị đặc trưng cao, xanh = thấp. OverTime, StockOptionLevel, Income, "
+                "JobLevel, MaritalStatus consistently nằm top đầu.")
+    else:
+        st.caption("SHAP cho GraphSAGE best-tune (GNN frozen — SHAP chỉ phân tích đóng góp đặc trưng, "
+                   "không thay model, không xây lại đồ thị).")
+        t1, t2, t3, t4 = st.tabs(["1. Toàn cục", "2. Hướng tác động", "3. Tương tác & nhóm", "4. Từng ca"])
+        with t1:
+            st.image(str(REP / "shap_graph_global.png"), use_container_width=True)
+            try:
+                _g = pd.read_csv(REP / "graph_shap_grouped.csv").head(10)
+                try:
+                    _hr = json.loads((REP / "hr_dictionary.json").read_text(encoding="utf-8"))
+                except Exception:
+                    _hr = {}
+                _g["Diễn giải"] = _g["feature_group"].map(
+                    lambda x: _hr.get(f"num__{x}", _hr.get(f"cat__{x}_Yes", x)))
+                st.dataframe(_g, use_container_width=True)
+            except Exception as e:
+                st.warning(f"Chưa có file SHAP Graph (chạy explain_graph_shap.py): {e}")
+        with t2:
+            st.image(str(REP / "shap_graph_beeswarm.png"), use_container_width=True)
+            st.info("Chấm đỏ = giá trị đặc trưng cao, xanh = thấp. Ví dụ: Tuổi thấp (xanh) đẩy rủi ro lên; "
+                    "OverTime=Yes (đỏ) đẩy rủi ro lên; hài lòng công việc cao (đỏ) kéo rủi ro xuống.")
+        with t3:
+            try:
+                st.dataframe(pd.read_csv(REP / "graph_shap_cohort.csv"), use_container_width=True)
+                st.dataframe(pd.read_csv(REP / "graph_shap_interaction.csv"), use_container_width=True)
+            except Exception as e:
+                st.warning(f"Chưa có file cohort/interaction: {e}")
+        with t4:
+            try:
+                _c = pd.read_csv(REP / "graph_shap_cases.csv")
+                _k = st.selectbox("Chọn ca mẫu", list(range(len(_c))),
+                                  format_func=lambda k: f"Ca {k}: proba={_c.loc[k, 'proba']:.2f}, "
+                                                       f"thực tế={'Rời đi' if _c.loc[k, 'true_label'] == 1 else 'Ở lại'}")
+                st.image(str(REP / f"shap_graph_waterfall_{int(_k):02d}.png"), use_container_width=True)
+                st.caption("Hiển thị toàn bộ nhóm HR gốc, sắp xếp theo độ lớn |SHAP|. "
+                           "Đỏ = tăng, xanh = giảm dự báo nghỉ việc; đây không phải kết luận nhân quả.")
+                st.dataframe(_c, use_container_width=True)
+            except Exception as e:
+                st.warning(f"Chưa có biểu đồ SHAP local: {e}")
 
 # ===================================================================
 # PAGE 4 : NHAN QUA & WHAT-IF

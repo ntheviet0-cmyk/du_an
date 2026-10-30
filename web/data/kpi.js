@@ -1,0 +1,2 @@
+window.HR = window.HR || {};
+window.HR.KPI = {"attrition_rate": 16.1, "n_total": 1470, "ate_ot": 21.1, "auc": 0.801, "thr": 0.8000000000000002, "graph_cfg": "SAGE h64-drop0.3 seed 42009 kNN-cosine k=15", "avg_monthly_usd": 6502.9, "avg_annual_usd": 78035.2, "policy_rates": {"ot_obs": 20.1, "buddy": 17.9, "pay": 12.2, "n_buddy_group": 342, "n_pay_group": 734, "ot": 21.1}};
