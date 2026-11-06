@@ -143,7 +143,11 @@
     var pp = t.closest("[data-preset]");
     if (pp) { window._prefill = PRESETS[pp.dataset.preset]; fillProfileForm(); return; }
     var pg = t.closest("[data-goto]");
-    if (pg) { goto(pg.getAttribute("data-goto")); return; }
+    if (pg) {
+      goto(pg.getAttribute("data-goto"));
+      if (pg.dataset.policyTarget && window._openPolicy) window._openPolicy(pg.dataset.policyTarget);
+      return;
+    }
     var pa = t.closest("[data-page]");
     if (pa) { goto(pa.getAttribute("data-page")); return; }
     var pop = t.closest(".pop-wrap");
@@ -295,17 +299,17 @@
     var otY = mean(RISK.filter(function (r) { return r.OverTime === "Yes"; }).map(function (r) { return r.left; })) * 100;
     var otN = mean(RISK.filter(function (r) { return r.OverTime === "No"; }).map(function (r) { return r.left; })) * 100;
     var items = [
-      { lv: ["Cần làm ngay", "red"], g: "chinh-sach", b: "Xem chính sách", t: "Giảm làm thêm giờ cho nhóm nguy cơ cao", r: "Vì nhóm làm thêm nghỉ tới " + otY.toFixed(0) + "% so với " + otN.toFixed(0) + "% ở nhóm không làm thêm. Cứ 100 người được giảm làm thêm thì giữ lại được khoảng " + vn1(KPI.ate_ot) + " người." },
+      { lv: ["Cần làm ngay", "red"], g: "chinh-sach", p: "ot", b: "Lập phương án", t: "Giảm làm thêm giờ cho nhóm nguy cơ cao", r: "Vì nhóm làm thêm nghỉ tới " + otY.toFixed(0) + "% so với " + otN.toFixed(0) + "% ở nhóm không làm thêm. Đây là thay đổi đã có bằng chứng tác động để đưa vào mô phỏng." },
       notYet > 0
         ? { lv: ["Cần làm ngay", "red"], g: "uu-tien", b: "Mở danh sách", t: "Gặp trao đổi 1-1 với " + reds.length + " người nguy cơ cao trong 7 ngày", r: "Còn " + notYet + " người chưa liên hệ. Đánh dấu trạng thái ngay trong danh sách để theo dõi tiến độ." }
         : { lv: ["Đã hoàn thành", "solid-green"], g: "uu-tien", b: "Mở danh sách", t: "Đã liên hệ đủ " + reds.length + " người nguy cơ cao", r: "Tiếp tục theo dõi nhóm Trung bình — " + nAmber + " người — trong tuần này." },
-      { lv: ["Nên làm tuần này", "amber"], g: "chinh-sach", b: "Xem chính sách", t: "Bố trí người hướng dẫn cho nhóm mới vào (0 đến 2 năm)", r: "Vì nhóm mới vào là nhóm nghỉ nhiều nhất, mà cách hỗ trợ này tốn ít chi phí nhất." }
+      { lv: ["Nên làm tuần này", "amber"], g: "chinh-sach", p: "buddy", b: "Lập kế hoạch thí điểm", t: "Bố trí người hướng dẫn cho nhóm mới vào", r: "Nhóm mới vào có tỷ lệ nghỉ cao hơn, nhưng cần thí điểm và đo lại trước khi khẳng định hiệu quả." }
     ];
     $("todo-list").innerHTML = items.map(function (w, k) {
       return '<div class="action"><span class="num">' + (k + 1) + '</span><div class="a-main">' +
         '<div class="a-top"><span class="chip ' + w.lv[1] + '">' + w.lv[0] + '</span><span class="a-title">' + esc(w.t) + '</span></div>' +
         '<small>' + esc(w.r) + '</small>' +
-        '<button class="btn sm" data-goto="' + w.g + '">' + esc(w.b) + icon("arrow-right") + '</button>' +
+        '<button class="btn sm" data-goto="' + w.g + '"' + (w.p ? ' data-policy-target="' + w.p + '"' : '') + '>' + esc(w.b) + icon("arrow-right") + '</button>' +
         '</div></div>';
     }).join("");
   }
@@ -807,106 +811,10 @@
     var PR = KPI.policy_rates || {};
     var RATES = { ot: num(PR.ot, KPI.ate_ot), buddy: num(PR.buddy, 12), pay: num(PR.pay, 8) };
     var AVG = num(KPI.avg_annual_usd, 65000);
-    var DESC_OT = "Áp dụng cho nhóm đang làm thêm giờ. Con số " + vn1(RATES.ot) + " điểm % là mức giảm nghỉ việc đã kiểm định nhân quả (đã loại trừ 17 yếu tố gây nhiễu).";
-    var DESC_BUDDY = "Áp dụng cho nhóm mới vào dưới 2 năm. Nhóm này hiện nghỉ nhiều hơn phần còn lại " + vn1(RATES.buddy) + " điểm % (quan sát trên " + fmtN(num(PR.n_buddy_group, 0)) + " người).";
-    var DESC_PAY = "Áp dụng cho nhóm thu nhập thấp hơn mặt bằng phòng. Nhóm này hiện nghỉ nhiều hơn " + vn1(RATES.pay) + " điểm % (quan sát trên " + fmtN(num(PR.n_pay_group, 0)) + " người).";
-    var DESCS = { ot: DESC_OT, buddy: DESC_BUDDY, pay: DESC_PAY };
-    var SHORT = { ot: "giảm làm thêm giờ", buddy: "bổ sung người hướng dẫn", pay: "xem lại thu nhập" };
-    var st0 = state.policy || {};
-    var cur = RATES[st0.cur] !== undefined ? st0.cur : "ot";
-    var curB = RATES[st0.curB] !== undefined ? st0.curB : "buddy";
-    var cmpOn = !!st0.cmpOn;
-
-    function pick(sel, key) {
-      document.querySelectorAll(sel + " .pick").forEach(function (x) { x.classList.remove("active"); });
-      var btn = document.querySelector(sel + ' [data-policy="' + key + '"]');
-      if (btn) btn.classList.add("active");
-    }
-    var savePolicy = debounce(function () {
-      state.policy = { cur: cur, cover: +$("s-cover").value, cp: +$("s-cp").value, cmpOn: cmpOn, curB: curB, coverB: +$("s-cover-b").value };
-      writeStore();
-    }, 250);
-
-    document.querySelectorAll("#policy-pick .pick").forEach(function (b) {
-      b.addEventListener("click", function () {
-        cur = b.dataset.policy;
-        pick("#policy-pick", cur);
-        $("policy-desc").textContent = DESCS[cur];
-        sim(); savePolicy();
-      });
-    });
-    document.querySelectorAll("#policy-pick-b .pick").forEach(function (b) {
-      b.addEventListener("click", function () {
-        curB = b.dataset.policy;
-        pick("#policy-pick-b", curB);
-        simB(); savePolicy();
-      });
-    });
-
-    function moneyTxt(money) {
-      return money >= 1000000 ? (money / 1000000).toFixed(1).replace(".", ",") + " triệu đô" : fmtN(money) + " đô";
-    }
-    function sim() {
-      var cover = +$("s-cover").value, cp = +$("s-cp").value;
-      $("v-cover").textContent = fmtN(cover); $("v-cp").textContent = cp + "%";
-      var rate = RATES[cur];
-      var kept = cover * rate / 100;
-      var money = kept * AVG * cp / 100;
-      $("sim-result").innerHTML = "Dự kiến giảm khoảng <b>" + kept.toFixed(0) + " người nghỉ việc</b> trong số " + fmtN(cover) + " người được áp dụng — tiết kiệm khoảng <b>" + moneyTxt(money) + "</b> chi phí tuyển và đào tạo lại.";
-      $("sim-math").textContent = "Cách hiểu con số: với " + fmtN(cover) + " người được áp dụng, cứ 100 người thì giữ lại được khoảng " + vn1(rate) + " người, nên giữ được tổng cộng khoảng " + kept.toFixed(0) + " người. Riêng chính sách giảm làm thêm giờ là kết quả nhân quả đã kiểm định; hai chính sách còn lại là mức chênh lệch quan sát được. Đây là ước tính để bàn bạc, không phải lời hứa chắc chắn.";
-      $("sim-code").textContent = summary();
-    }
-    function simB() {
-      var cover = +$("s-cover-b").value, cp = +$("s-cp").value;
-      $("v-cover-b").textContent = fmtN(cover);
-      var rate = RATES[curB];
-      var kept = cover * rate / 100;
-      var money = kept * AVG * cp / 100;
-      $("sim-result-b").innerHTML = "Phương án B dự kiến giảm khoảng <b>" + kept.toFixed(0) + " người nghỉ việc</b> trong số " + fmtN(cover) + " người được áp dụng — tiết kiệm khoảng <b>" + moneyTxt(money) + "</b>.";
-      $("sim-math-b").textContent = "Phương án B (" + SHORT[curB] + "): cứ 100 người thì giữ lại được khoảng " + vn1(rate) + " người.";
-      $("sim-code").textContent = summary();
-    }
-    function summary() {
-      var txt = "Tóm tắt mang đi họp: chính sách giữ chân cho " + fmtN(+$("s-cover").value) + " người — dự kiến giảm khoảng " + (+$("s-cover").value * RATES[cur] / 100).toFixed(0) + " người nghỉ, tiết kiệm khoảng " + moneyTxt(+$("s-cover").value * RATES[cur] / 100 * AVG * +$("s-cp").value / 100) + ".";
-      if (cmpOn) txt += " So với phương án B cho " + fmtN(+$("s-cover-b").value) + " người: giảm khoảng " + (+$("s-cover-b").value * RATES[curB] / 100).toFixed(0) + " người, tiết kiệm khoảng " + moneyTxt(+$("s-cover-b").value * RATES[curB] / 100 * AVG * +$("s-cp").value / 100) + ".";
-      return txt + " Số liệu là ước tính.";
-    }
-
-    ["s-cover", "s-cp"].forEach(function (id) { $(id).addEventListener("input", function () { sim(); if (cmpOn) simB(); savePolicy(); }); });
-    $("s-cover-b").addEventListener("input", function () { simB(); savePolicy(); });
-
-    $("btn-cmp").addEventListener("click", function () {
-      cmpOn = !cmpOn;
-      $("cmp-body").hidden = !cmpOn;
-      $("btn-cmp").setAttribute("aria-expanded", String(cmpOn));
-      $("btn-cmp").textContent = cmpOn ? "Tắt so sánh" : "So sánh với phương án khác";
-      if (cmpOn) simB();
-      $("sim-code").textContent = summary();
-      savePolicy();
-    });
-
-    if (st0.cover) $("s-cover").value = st0.cover;
-    if (st0.cp) $("s-cp").value = st0.cp;
-    if (st0.coverB) $("s-cover-b").value = st0.coverB;
-    pick("#policy-pick", cur);
-    pick("#policy-pick-b", curB);
-    $("policy-desc").textContent = DESCS[cur];
-    if (cmpOn) {
-      $("cmp-body").hidden = false;
-      $("btn-cmp").setAttribute("aria-expanded", "true");
-      $("btn-cmp").textContent = "Tắt so sánh";
-    }
-    sim();
-    if (cmpOn) simB();
-
-    $("btn-copy").addEventListener("click", function () {
-      var el = $("sim-code"); el.style.display = "block";
-      el.textContent = summary();
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(el.textContent).then(function () { toast("Đã sao chép tóm tắt"); }, function () { toast("Tóm tắt đã hiện bên dưới để sao chép"); });
-      } else {
-        toast("Tóm tắt đã hiện bên dưới để sao chép");
-      }
+    window.initPolicyPlanner({
+      KPI: KPI, rates: RATES, avgAnnual: AVG, PR: PR, $: $, esc: esc, icon: icon,
+      fmtN: fmtN, vn1: vn1, num: num, state: state, writeStore: writeStore,
+      debounce: debounce, toast: toast, isPolicyPage: function () { return activePage === "chinh-sach"; }
     });
   })();
 

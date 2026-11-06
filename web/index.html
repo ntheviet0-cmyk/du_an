@@ -66,7 +66,7 @@
       </div>
       <div class="side-user">
         <div class="avatar" aria-hidden="true">HR</div>
-        <div class="side-user-text"><b>Nhân sự</b><small>Dữ liệu nội bộ, không gửi đi đâu</small></div>
+        <div class="side-user-text"><b>Nhân sự</b><small>Trạng thái lưu trên máy; gợi ý dùng Gemini</small></div>
       </div>
       <p class="side-note">Công cụ chỉ hỗ trợ, quyết định cuối cùng vẫn là của anh chị làm nhân sự.</p>
     </div>
@@ -254,88 +254,92 @@
   <section class="page" id="page-chinh-sach" aria-label="Chính sách">
     <div class="page-head">
       <div class="eyebrow">Bàn trước khi làm</div>
-      <h1>Xem trước hiệu quả của một chính sách</h1>
-      <p class="page-sub">Chọn một thay đổi mà công ty đang cân nhắc, hệ thống sẽ ước tính giữ được khoảng bao nhiêu người. Đây là con số ước tính để bàn bạc, không phải lời hứa chắc chắn.</p>
+      <h1>Lập phương án chính sách giữ chân</h1>
+      <p class="page-sub">Chọn vấn đề công ty đang cân nhắc. Hệ thống sẽ hướng dẫn phạm vi, giả định và cách đo kết quả; chỉ ước tính tác động khi dữ liệu hiện có cho phép.</p>
     </div>
 
-    <div class="steps" aria-hidden="true">
-      <span class="step on"><span class="n">1</span>Chọn thay đổi</span>
-      <span class="step on"><span class="n">2</span>Chọn số người áp dụng</span>
-      <span class="step on"><span class="n">3</span>So sánh và mang đi họp</span>
-    </div>
+    <ol class="policy-progress" id="policy-progress" aria-label="Tiến trình lập phương án">
+      <li class="active" data-policy-step="1"><span></span><b>Chọn vấn đề</b></li>
+      <li data-policy-step="2"><span></span><b>Thiết lập kế hoạch</b></li>
+      <li data-policy-step="3"><span></span><b>Xem phương án</b></li>
+    </ol>
 
-    <div class="card">
-      <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Bước 1: chọn thay đổi muốn thử</div>
+    <div class="policy-stage" id="policy-step-1">
+      <div class="stage-head">
+        <div><span class="stage-kicker"></span><h2>Bạn muốn cải thiện vấn đề nào?</h2></div>
+        <p>Chọn vấn đề gần nhất với quyết định công ty đang cân nhắc.</p>
+      </div>
       <div class="policy-pick" id="policy-pick">
-        <button class="pick active" data-policy="ot">
+        <button class="pick active" data-policy="ot" aria-pressed="true">
           <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-clock"/></svg></span>
-          <span><span class="pick-title">Giảm làm thêm giờ</span><span class="pick-sub">Cho nhóm đang làm thêm nhiều</span></span>
+          <span class="pick-body"><span class="chip green">Có bằng chứng tác động</span><span class="pick-title">Giảm làm thêm giờ</span><span class="pick-sub">Cho nhóm đang thường xuyên làm thêm</span></span>
+          <svg class="icon pick-check" aria-hidden="true"><use href="#i-check"/></svg>
         </button>
-        <button class="pick" data-policy="buddy">
+        <button class="pick" data-policy="buddy" aria-pressed="false">
           <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-users"/></svg></span>
-          <span><span class="pick-title">Bổ sung người hướng dẫn</span><span class="pick-sub">Cho nhân viên mới vào</span></span>
+          <span class="pick-body"><span class="chip amber">Nên thí điểm trước</span><span class="pick-title">Hỗ trợ nhân viên mới</span><span class="pick-sub">Bố trí người hướng dẫn trong giai đoạn đầu</span></span>
+          <svg class="icon pick-check" aria-hidden="true"><use href="#i-check"/></svg>
         </button>
-        <button class="pick" data-policy="pay">
+        <button class="pick" data-policy="pay" aria-pressed="false">
           <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-chart"/></svg></span>
-          <span><span class="pick-title">Xem lại thu nhập</span><span class="pick-sub">Cho nhóm thu nhập thấp</span></span>
+          <span class="pick-body"><span class="chip amber">Nên thí điểm trước</span><span class="pick-title">Rà soát thu nhập</span><span class="pick-sub">Cho nhóm thấp hơn mặt bằng phòng ban</span></span>
+          <svg class="icon pick-check" aria-hidden="true"><use href="#i-check"/></svg>
         </button>
       </div>
-      <p class="muted explain" id="policy-desc" style="margin-top:10px;"></p>
+      <div class="policy-evidence" id="policy-desc"></div>
+      <div class="stage-actions"><span></span><button class="btn primary" id="btn-policy-setup">Thiết lập phương án<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div>
     </div>
 
-    <div class="card">
-      <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Bước 2: chọn số người áp dụng</div>
-      <div class="frow slider-row" style="grid-template-columns:1fr 1fr;">
-        <div class="slider-field">
-          <label for="s-cover">Số người được áp dụng: <b id="v-cover">100</b> người</label>
-          <input type="range" id="s-cover" min="20" max="500" step="10" value="100">
-        </div>
-        <div class="slider-field">
-          <label for="s-cp">Chi phí thay một người nghỉ (so với lương năm): <b id="v-cp">100%</b></label>
-          <input type="range" id="s-cp" min="50" max="200" step="10" value="100">
-        </div>
-      </div>
-      <div class="successbox" id="sim-result"></div>
-      <p class="muted explain" id="sim-math"></p>
-      <div class="btn-row">
-        <button class="btn" id="btn-cmp" aria-expanded="false" aria-controls="cmp-body">So sánh với phương án khác</button>
+    <div class="policy-stage" id="policy-step-2" hidden>
+      <div class="stage-head">
+        <div><span class="stage-kicker"></span><h2 id="policy-form-title">Thiết lập kế hoạch</h2></div>
+        <p id="policy-form-sub">Chỉ cần nhập các con số công ty đang có.</p>
       </div>
 
-      <div class="cmp-panel" id="cmp-body" hidden>
-        <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>Bước 3: phương án B để so sánh</div>
-        <div class="policy-pick" id="policy-pick-b">
-          <button class="pick" data-policy="ot">
-            <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-clock"/></svg></span>
-            <span><span class="pick-title">Giảm làm thêm giờ</span></span>
-          </button>
-          <button class="pick active" data-policy="buddy">
-            <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-users"/></svg></span>
-            <span><span class="pick-title">Bổ sung người hướng dẫn</span></span>
-          </button>
-          <button class="pick" data-policy="pay">
-            <span class="pick-icon"><svg class="icon lg" aria-hidden="true"><use href="#i-chart"/></svg></span>
-            <span><span class="pick-title">Xem lại thu nhập</span></span>
-          </button>
-        </div>
-        <div class="slider-row" style="grid-template-columns:1fr;">
-          <div class="slider-field">
-            <label for="s-cover-b">Phương án B: số người được áp dụng: <b id="v-cover-b">100</b> người</label>
-            <input type="range" id="s-cover-b" min="20" max="500" step="10" value="100">
-          </div>
-        </div>
-        <div class="successbox" id="sim-result-b"></div>
-        <p class="muted" id="sim-math-b"></p>
+      <div class="policy-form" data-policy-form="ot">
+        <div class="field"><label for="p-ot-total">Tổng số nhân viên</label><input class="input" type="number" id="p-ot-total" min="1" max="100000" value="1470"></div>
+        <div class="field"><label for="p-ot-rate">Tỷ lệ đang làm thêm giờ (%)</label><input class="input" type="number" id="p-ot-rate" min="0" max="100" value="28"></div>
+        <div class="field"><label for="p-ot-reduce">Mức dự kiến giảm làm thêm (%)</label><input class="input" type="number" id="p-ot-reduce" min="0" max="100" value="50"></div>
+        <div class="field"><label for="p-ot-months">Thời gian triển khai (tháng)</label><input class="input" type="number" id="p-ot-months" min="1" max="24" value="3"></div>
+      </div>
+      <div class="policy-form" data-policy-form="buddy" hidden>
+        <div class="field"><label for="p-buddy-eligible">Nhân viên mới đủ điều kiện</label><input class="input" type="number" id="p-buddy-eligible" min="1" max="100000" value="100"></div>
+        <div class="field"><label for="p-buddy-capacity">Số người có thể bố trí buddy</label><input class="input" type="number" id="p-buddy-capacity" min="1" max="100000" value="40"></div>
+        <div class="field"><label for="p-buddy-months">Thời gian thí điểm (tháng)</label><input class="input" type="number" id="p-buddy-months" min="1" max="12" value="3"></div>
+        <div class="field"><label for="p-buddy-checkin">Số lần check-in mỗi tháng</label><input class="input" type="number" id="p-buddy-checkin" min="1" max="12" value="2"></div>
+      </div>
+      <div class="policy-form" data-policy-form="pay" hidden>
+        <div class="field"><label for="p-pay-eligible">Nhân viên cần rà soát</label><input class="input" type="number" id="p-pay-eligible" min="1" max="100000" value="100"></div>
+        <div class="field"><label for="p-pay-capacity">Số hồ sơ xử lý trong đợt này</label><input class="input" type="number" id="p-pay-capacity" min="1" max="100000" value="30"></div>
+        <div class="field"><label for="p-pay-months">Thời gian rà soát (tháng)</label><input class="input" type="number" id="p-pay-months" min="1" max="12" value="3"></div>
+        <div class="field"><label for="p-pay-approval">Cấp phê duyệt</label><select class="input" id="p-pay-approval"><option>Trưởng phòng</option><option>Giám đốc nhân sự</option><option>Ban điều hành</option></select></div>
       </div>
 
-      <div class="btn-row" style="margin-top:14px;">
-        <button class="btn primary" id="btn-copy">
-          <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Lấy tóm tắt mang đi họp
-        </button>
-      </div>
-      <pre class="code" id="sim-code" style="display:none"></pre>
+      <details class="advanced">
+        <summary><svg class="icon" aria-hidden="true"><use href="#i-chev-right"/></svg>Giả định chi phí nâng cao</summary>
+        <div class="advanced-body policy-advanced">
+          <div class="field"><label for="p-replace">Chi phí thay một người nghỉ (% lương năm)</label><input class="input" type="number" id="p-replace" min="0" max="500" value="100"></div>
+          <div class="field"><label for="p-budget">Ngân sách triển khai dự kiến (đô)</label><input class="input" type="number" id="p-budget" min="0" max="100000000" value="0"></div>
+        </div>
+      </details>
+      <div class="form-note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span id="policy-form-note"></span></div>
+      <div class="stage-actions"><button class="btn" id="btn-policy-back-1">Quay lại</button><button class="btn primary" id="btn-policy-result">Xem phương án<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div>
     </div>
 
-    <div class="warnbox">Số trên là ước tính để lập kế hoạch, không phải cam kết với từng người cụ thể. Khi in hoặc chia sẻ, thu nhập chi tiết được che bớt để giữ riêng tư.</div>
+    <div class="policy-stage" id="policy-step-3" hidden>
+      <div class="stage-head result-head">
+        <div><span class="stage-kicker"></span><h2 id="policy-result-title">Phương án đề xuất</h2></div>
+        <span class="chip green" id="policy-result-badge">Có bằng chứng tác động</span>
+      </div>
+      <div class="policy-result-grid" id="policy-result-grid"></div>
+      <div class="decision-grid">
+        <div class="decision-panel"><h3>Giả định đang dùng</h3><ul id="policy-assumptions"></ul></div>
+        <div class="decision-panel"><h3>Việc cần làm tiếp theo</h3><ul id="policy-next-actions"></ul></div>
+      </div>
+      <div class="policy-caution" id="policy-caution"></div>
+      <div class="stage-actions wrap"><button class="btn" id="btn-policy-back-2">Chỉnh sửa</button><div class="btn-row"><button class="btn" id="btn-policy-restart">Đổi vấn đề</button><button class="btn primary" id="btn-copy"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Sao chép bản trình duyệt</button></div></div>
+      <pre class="code" id="sim-code" hidden></pre>
+    </div>
   </section>
 
   <!-- 6. GIOI THIEU -->
@@ -358,12 +362,12 @@
       <div class="card">
         <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Độ tin cậy của đánh giá</div>
         <p><span class="parity-badge"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Đã kiểm chứng khớp bản Python — sai số dưới 0,001</span></p>
-        <p style="margin-top:10px;">Đánh giá đáng tin cậy để dùng hằng ngày: trong 10 trường hợp, hệ thống nhận định đúng khoảng 8. Con số này rút ra từ 1.470 hồ sơ nội bộ của công ty. Dù vậy, hệ thống không biết hết chuyện riêng của mỗi người, nên anh chị vẫn trò chuyện trực tiếp trước khi quyết định.</p>
+        <p style="margin-top:10px;">Trên dữ liệu mẫu IBM gồm 1.470 hồ sơ, hệ thống đạt khả năng phân biệt hai trường hợp ngẫu nhiên khoảng 80%. Đây không phải tỷ lệ dự đoán đúng 8/10 và chưa đại diện cho nhân sự của công ty. Anh chị vẫn cần đối chiếu dữ liệu HRIS và trò chuyện trực tiếp trước khi quyết định.</p>
       </div>
     </div>
 
     <h2 class="sec">Bằng chứng kiểm định</h2>
-    <p class="sec-sub explain">Biểu đồ bên dưới là kết quả kiểm định trên dữ liệu nội bộ: khả năng phân biệt người nghỉ và người ở lại, và các yếu tố ảnh hưởng mạnh nhất.</p>
+    <p class="sec-sub explain">Biểu đồ bên dưới là kết quả kiểm định trên dữ liệu mẫu IBM: khả năng phân biệt người nghỉ và người ở lại, và các yếu tố ảnh hưởng mạnh nhất.</p>
     <div class="card">
       <div class="evidence">
         <figure>
@@ -380,7 +384,7 @@
     <div class="grid2">
       <div class="card">
         <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>Lưu ý khi dùng chung</div>
-        <p>Dữ liệu trong trang này là nội bộ. Khi in hoặc gửi cho người khác, thu nhập chi tiết được che bớt. Không dùng các thông tin như tuổi, giới tính hay tình trạng hôn nhân để phân biệt đối xử, chỉ dùng để hiểu và hỗ trợ người lao động tốt hơn.</p>
+        <p>Dữ liệu minh họa trong trang lấy từ bộ mẫu IBM. Khi dùng hồ sơ thật, thu nhập chi tiết được che bớt lúc in. Không dùng tuổi, giới tính hay tình trạng hôn nhân để ra quyết định bất lợi; phần gợi ý AI sẽ gửi các dữ kiện công việc đã chọn tới Gemini.</p>
       </div>
       <div class="card">
         <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg>Dữ liệu theo dõi trên máy này</div>
@@ -394,7 +398,7 @@
     </div>
   </section>
 
-      <div class="footer">Nguồn: dữ liệu nội bộ 1.470 nhân viên. Công cụ chỉ hỗ trợ, quyết định cuối cùng là của anh chị làm nhân sự. Khi in, thông tin thu nhập được che bớt.</div>
+      <div class="footer">Nguồn minh họa: bộ dữ liệu IBM HR Analytics, 1.470 hồ sơ. Công cụ chỉ hỗ trợ; cần kiểm định lại bằng dữ liệu thực tế trước khi sử dụng trong doanh nghiệp.</div>
     </main>
   </div>
 </div>
@@ -412,7 +416,6 @@
 </aside>
 
 <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
-ư
 <script src="data/kpi.js"></script>
 <script src="data/vocab.js"></script>
 <script src="data/shap.js"></script>
@@ -423,6 +426,7 @@
 <script src="data/xtrain.js"></script>
 <script src="data/edges.js"></script>
 <script src="sage.js"></script>
+<script src="policy.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

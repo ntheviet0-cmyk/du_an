@@ -174,7 +174,7 @@ def generate_report(payload):
     key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not key:
         raise RuntimeError("Chưa đặt GEMINI_API_KEY cho máy chủ web.")
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
     if not re.fullmatch(r"[A-Za-z0-9._-]+", model):
         raise RuntimeError("MODEL không hợp lệ.")
     generation = {
@@ -233,7 +233,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def end_headers(self):
         # The UI and API schema evolve together; never reuse an old renderer.
-        if self.path.split("?", 1)[0] in ("/", "/index.html", "/app.js"):
+        if self.path.split("?", 1)[0] in ("/", "/index.html", "/app.js", "/policy.js"):
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 

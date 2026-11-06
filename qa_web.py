@@ -17,16 +17,18 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent
 WEB = REPO / "web"
 html = (WEB / "index.html").read_text(encoding="utf-8")
-js = (WEB / "app.js").read_text(encoding="utf-8")
+js = "\n".join((WEB / name).read_text(encoding="utf-8") for name in ("app.js", "policy.js"))
 
 ids_html = set(re.findall(r'id="([^"]+)"', html))
+duplicate_ids = sorted(i for i in ids_html if len(re.findall(r'id="' + re.escape(i) + r'"', html)) > 1)
+print("duplicate-ids:", duplicate_ids if duplicate_ids else "NONE")
 used = set(re.findall(r'\$\("([^"]+)"\)', js))
 dynamic_prefix = ("pf-", "fg-")
 dynamic_ids = {"drawer-track", "drawer-note", "drawer-note-hint"}
 missing = sorted(u for u in used if u not in ids_html and u not in dynamic_ids and not u.startswith(dynamic_prefix))
 print("used-not-in-html:", missing if missing else "NONE")
 
-need = ["styles.css", "app.js", "sage.js", "test_sage_parity.js", "index.html",
+need = ["styles.css", "app.js", "policy.js", "sage.js", "test_sage_parity.js", "index.html",
         "data/kpi.js", "data/vocab.js", "data/shap.js", "data/risk.js", "data/meta.js",
         "data/preproc.js", "data/weights.js", "data/xtrain.js", "data/edges.js", "data/parity.js",
         "assets/fonts.css",
@@ -72,7 +74,7 @@ if shutil.which("node"):
 else:
     print("node parity: SKIP (khong co node)")
 
-fail = (missing or bad or bad_fonts or bad_srcs or bad_goto or (nav_html ^ pages_expected)
+fail = (duplicate_ids or missing or bad or bad_fonts or bad_srcs or bad_goto or (nav_html ^ pages_expected)
         or bad_policy or len(wfs) != 14 or node_ok is False)
 if fail:
     print("QA_STATIC_FAIL")

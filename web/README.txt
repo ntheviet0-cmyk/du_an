@@ -23,9 +23,9 @@ Tính năng mới:
   cột trạng thái + ghi chú khi xuất CSV. Xóa sạch ở trang "Độ tin cậy".
 - Danh sách: tìm theo mã NV-xxxx, lọc mức/phòng/thâm niên/trạng thái, bấm "Xem thêm",
   nút in tự mở rộng toàn bộ danh sách đang lọc.
-- Chính sách: so sánh phương án A/B, nút "Lấy tóm tắt mang đi họp", số liệu lấy từ
-  KPI.policy_rates (giảm làm thêm giờ là kết quả nhân quả đã kiểm định; hai chính sách
-  còn lại là chênh lệch quan sát được).
+- Chính sách: wizard 3 bước với form riêng cho từng vấn đề và bản trình duyệt. Chỉ giảm
+  làm thêm giờ có ước tính tác động; buddy và thu nhập tạo kế hoạch thí điểm vì số liệu
+  KPI.policy_rates của hai nhóm này chỉ là chênh lệch quan sát được.
 - Font Be Vietnam Pro tự host trong assets/fonts (không gọi mạng).
 
 Lưu ý trung thực khi demo:
