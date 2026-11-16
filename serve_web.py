@@ -174,7 +174,7 @@ def generate_report(payload):
     key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not key:
         raise RuntimeError("Chưa đặt GEMINI_API_KEY cho máy chủ web.")
-    model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
     if not re.fullmatch(r"[A-Za-z0-9._-]+", model):
         raise RuntimeError("MODEL không hợp lệ.")
     generation = {

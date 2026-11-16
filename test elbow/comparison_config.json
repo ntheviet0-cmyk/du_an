@@ -1,0 +1,18 @@
+{
+  "split_seed": 42,
+  "outer_folds": 5,
+  "inner_folds": 3,
+  "search_seeds": [42],
+  "evaluation_seeds": [42, 123, 2026],
+  "max_epochs": 200,
+  "patience": 30,
+  "eval_every": 5,
+  "inference_batch_size": 8,
+  "torch_threads": 2,
+  "baseline": {"k": 15, "h1": 64, "h2": 32, "dropout": 0.3, "lr": 0.01, "weight_decay": 0.00005},
+  "k_values": [10, 15, 20],
+  "hidden_values": [[32, 16], [64, 32], [128, 64]],
+  "dropout_values": [0.3, 0.5],
+  "learning_rates": [0.005, 0.01],
+  "weight_decays": [0.00005, 0.0005]
+}
